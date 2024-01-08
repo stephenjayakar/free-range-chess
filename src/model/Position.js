@@ -112,7 +112,7 @@ export class Position {
   }
 
   static squareToIndex(square, boardWidth) {
-    console.log(square)
+    console.log(square);
     const coordinates = Position.squareToCoordinates(square);
     return coordinates[0] + coordinates[1] * 8;
   }

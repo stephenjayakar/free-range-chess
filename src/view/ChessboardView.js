@@ -205,9 +205,13 @@ export class ChessboardView {
       borderInner.setAttribute("class", "border-inner");
     }
 
-    for (let i = 0; i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight; i++) {
+    for (
+      let i = 0;
+      i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight;
+      i++
+    ) {
       const index =
-            this.chessboard.state.orientation === COLOR.white ? i : 63 - i;
+        this.chessboard.state.orientation === COLOR.white ? i : 63 - i;
 
       // We want squares to alternate within a row. But then a new row
       // should start with a different color to make a checkerboard
@@ -215,8 +219,11 @@ export class ChessboardView {
       //
       // TODO(sjayakar): This might create the constraint
       // that widths have to be even...
-      const alternateFactor = Math.floor(index / this.chessboard.props.boardWidth);
-      const squareColor = (alternateFactor + index) % 2 === 0 ? "black" : "white";
+      const alternateFactor = Math.floor(
+        index / this.chessboard.props.boardWidth
+      );
+      const squareColor =
+        (alternateFactor + index) % 2 === 0 ? "black" : "white";
       // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
       const point = this.squareToPoint(Position.indexToSquare(index));
@@ -295,7 +302,11 @@ export class ChessboardView {
   redrawPieces(squares = this.chessboard.state.position.squares) {
     const childNodes = Array.from(this.piecesGroup.childNodes);
     const isDragging = this.visualMoveInput.isDragging();
-    for (let i = 0; i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight; i++) {
+    for (
+      let i = 0;
+      i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight;
+      i++
+    ) {
       const pieceName = squares[i];
       if (pieceName) {
         const square = Position.indexToSquare(i);
@@ -529,8 +540,15 @@ export class ChessboardView {
   indexToPoint(index) {
     let x, y;
     if (this.chessboard.state.orientation === COLOR.white) {
-      x = this.borderSize + (index % this.chessboard.props.boardWidth) * this.squareWidth;
-      y = this.borderSize + ((this.chessboard.props.boardHeight - 1) - Math.floor(index / this.chessboard.props.boardWidth)) * this.squareHeight;
+      x =
+        this.borderSize +
+        (index % this.chessboard.props.boardWidth) * this.squareWidth;
+      y =
+        this.borderSize +
+        (this.chessboard.props.boardHeight -
+          1 -
+          Math.floor(index / this.chessboard.props.boardWidth)) *
+          this.squareHeight;
     } else {
       // TODO(sjayakar): kind of ignoring orientation.
       x = this.borderSize + (7 - (index % 8)) * this.squareWidth;
