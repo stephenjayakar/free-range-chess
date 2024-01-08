@@ -226,7 +226,7 @@ export class ChessboardView {
         (alternateFactor + index) % 2 === 0 ? "black" : "white";
       // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
-      const point = this.squareToPoint(Position.indexToSquare(index));
+      const point = this.squareToPoint(Position.indexToSquare(index, this.chessboard.props.boardWidth));
       const squareRect = Svg.addElement(this.boardGroup, "rect", {
         x: point.x,
         y: point.y,
@@ -234,7 +234,7 @@ export class ChessboardView {
         height: this.squareHeight,
       });
       squareRect.setAttribute("class", fieldClass);
-      squareRect.setAttribute("data-square", Position.indexToSquare(index));
+      squareRect.setAttribute("data-square", Position.indexToSquare(index, this.chessboard.props.boardWidth));
     }
   }
 
@@ -309,7 +309,7 @@ export class ChessboardView {
     ) {
       const pieceName = squares[i];
       if (pieceName) {
-        const square = Position.indexToSquare(i);
+        const square = Position.indexToSquare(i, this.chessboard.props.boardWidth);
         this.drawPieceOnSquare(
           square,
           pieceName,
@@ -558,7 +558,7 @@ export class ChessboardView {
   }
 
   squareToPoint(square) {
-    const index = Position.squareToIndex(square);
+    const index = Position.squareToIndex(square, this.chessboard.props.boardWidth);
     return this.indexToPoint(index);
   }
 
