@@ -11,6 +11,12 @@ import { EXTENSION_POINT } from "../model/Extension.js";
 import { Svg } from "../lib/Svg.js";
 import { Utils } from "../lib/Utils.js";
 
+// TODO(sjayakar): move this into a config
+// ...and eventually abstract it to an arbitrary map.
+
+const BOARD_WIDTH = 24;
+const BOARD_HEIGHT = 20;
+
 export class ChessboardView {
   constructor(chessboard) {
     this.chessboard = chessboard;
@@ -141,8 +147,11 @@ export class ChessboardView {
     }
     this.innerWidth = this.width - 2 * this.borderSize;
     this.innerHeight = this.height - 2 * this.borderSize;
-    this.squareWidth = this.innerWidth / 8;
-    this.squareHeight = this.innerHeight / 8;
+    this.squareWidth = this.innerWidth / BOARD_WIDTH;
+    // TODO(sjayakar): consider making this a legit square. so you would want to
+    // scale in a way that's ok with cutting off. right now the
+    // scaling is kind of coupled for the viewport size & the square
+    this.squareHeight = this.innerHeight / BOARD_HEIGHT;
     this.scalingX = this.squareWidth / piecesTileSize;
     this.scalingY = this.squareHeight / piecesTileSize;
     this.pieceXTranslate =
@@ -202,10 +211,19 @@ export class ChessboardView {
       borderInner.setAttribute("class", "border-inner");
     }
 
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
       const index =
-        this.chessboard.state.orientation === COLOR.white ? i : 63 - i;
-      const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
+            this.chessboard.state.orientation === COLOR.white ? i : 63 - i;
+
+      // We want squares to alternate within a row. But then a new row
+      // should start with a different color to make a checkerboard
+      // pattern.
+      //
+      // TODO(sjayakar): This might create the constraint
+      // that widths have to be even...
+      const alternateFactor = Math.floor(index / BOARD_HEIGHT);
+      const squareColor = (alternateFactor + index) % 2 === 0 ? "black" : "white";
+      // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
       const point = this.squareToPoint(Position.indexToSquare(index));
       const squareRect = Svg.addElement(this.boardGroup, "rect", {
@@ -517,9 +535,10 @@ export class ChessboardView {
   indexToPoint(index) {
     let x, y;
     if (this.chessboard.state.orientation === COLOR.white) {
-      x = this.borderSize + (index % 8) * this.squareWidth;
-      y = this.borderSize + (7 - Math.floor(index / 8)) * this.squareHeight;
+      x = this.borderSize + (index % BOARD_WIDTH) * this.squareWidth;
+      y = this.borderSize + ((BOARD_HEIGHT - 1) - Math.floor(index / BOARD_HEIGHT)) * this.squareHeight;
     } else {
+      // TODO(sjayakar): kind of ignoring orientation.
       x = this.borderSize + (7 - (index % 8)) * this.squareWidth;
       y = this.borderSize + Math.floor(index / 8) * this.squareHeight;
     }
