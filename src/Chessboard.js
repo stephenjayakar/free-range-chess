@@ -88,7 +88,6 @@ export class Chessboard {
         /* {class: ExtensionClass, props: { ... }} */
       ], // add extensions here
     };
-    this.props = {...this.props, ...props};
     Utils.mergeObjects(this.props, props);
     this.state = new ChessboardState(this.props.boardWidth, this.props.boardHeight);
     this.view = new ChessboardView(this);
