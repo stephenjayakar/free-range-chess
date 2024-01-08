@@ -221,7 +221,7 @@ export class ChessboardView {
       //
       // TODO(sjayakar): This might create the constraint
       // that widths have to be even...
-      const alternateFactor = Math.floor(index / BOARD_HEIGHT);
+      const alternateFactor = Math.floor(index / BOARD_WIDTH);
       const squareColor = (alternateFactor + index) % 2 === 0 ? "black" : "white";
       // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
@@ -536,7 +536,7 @@ export class ChessboardView {
     let x, y;
     if (this.chessboard.state.orientation === COLOR.white) {
       x = this.borderSize + (index % BOARD_WIDTH) * this.squareWidth;
-      y = this.borderSize + ((BOARD_HEIGHT - 1) - Math.floor(index / BOARD_HEIGHT)) * this.squareHeight;
+      y = this.borderSize + ((BOARD_HEIGHT - 1) - Math.floor(index / BOARD_WIDTH)) * this.squareHeight;
     } else {
       // TODO(sjayakar): kind of ignoring orientation.
       x = this.borderSize + (7 - (index % 8)) * this.squareWidth;
