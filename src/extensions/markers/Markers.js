@@ -82,14 +82,14 @@ export class Markers extends Extension {
         )
     }
 
-    drawMarker(marker) {
+  drawMarker(marker) {
         let markerGroup
         if (marker.type.position === 'above') {
             markerGroup = Svg.addElement(this.markerGroupUp, "g")
         } else {
             markerGroup = Svg.addElement(this.markerGroupDown, "g")
         }
-        markerGroup.setAttribute("data-square", marker.square)
+    markerGroup.setAttribute("data-square", marker.square)
         const point = this.chessboard.view.squareToPoint(marker.square)
         const transform = (this.chessboard.view.svg.createSVGTransform())
         transform.setTranslate(point.x, point.y)
@@ -104,10 +104,6 @@ export class Markers extends Extension {
     }
 
     addMarker(type, square) {
-        if (typeof type === "string" || typeof square === "object") { // todo remove 2022-12-01
-            console.error("changed the signature of `addMarker` to `(type, square)` with v5.1.x")
-            return
-        }
         this.markers.push(new Marker(square, type))
         this.onRedrawBoard()
     }

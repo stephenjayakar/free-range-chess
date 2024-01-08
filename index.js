@@ -1,6 +1,6 @@
 import { INPUT_EVENT_TYPE, Chessboard } from "../src/Chessboard.js";
-import { FEN } from "../src/model/Position.js";
-import { Markers } from "../src/extensions/markers/Markers.js";
+import { FEN, Position } from "../src/model/Position.js";
+import { Markers, MARKER_TYPE } from "../src/extensions/markers/Markers.js";
 
 window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
@@ -18,15 +18,26 @@ function inputHandler(event) {
   switch (event.type) {
     case INPUT_EVENT_TYPE.moveInputStarted:
       log(`moveInputStarted: ${event.squareFrom}`);
+      const piece = event.chessboard.getPiece(event.squareFrom);
+      const moves = potentialMoves(event.chessboard, piece, event.squareFrom);
+      moves.forEach((s) => {
+        event.chessboard.addMarker(MARKER_TYPE.dot, s);
+      });
+      // TODO: I think I would plug in the dot rendering method here.
       return true; // false cancels move
     case INPUT_EVENT_TYPE.validateMoveInput:
       log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
+      //       log(`piece: ${window.board.getPiece(event.squareFrom)}`);
       return true; // false cancels move
     case INPUT_EVENT_TYPE.moveInputCanceled:
       log(`moveInputCanceled`);
+      event.chessboard.removeMarkers(MARKER_TYPE.dot);
+      event.chessboard.removeMarkers(MARKER_TYPE.bevel);
       break;
     case INPUT_EVENT_TYPE.moveInputFinished:
       log(`moveInputFinished`);
+      event.chessboard.removeMarkers(MARKER_TYPE.dot);
+      event.chessboard.removeMarkers(MARKER_TYPE.bevel);
       break;
     case INPUT_EVENT_TYPE.movingOverSquare:
       log(`movingOverSquare: ${event.squareTo}`);
@@ -40,4 +51,22 @@ function log(text) {
   const log = document.createElement("div");
   log.innerText = text;
   output.appendChild(log);
+}
+
+// returns a list of squares
+function potentialMoves(chessboard, piece, square) {
+  // TODO: branch on piece. assuming pawn
+  // TODO: check for collisions
+  // - and if it's allied, it's not a valid move
+  // TODO: check square edge collisions
+
+  const [x, y] = Position.squareToCoordinates(square);
+  return [
+    [x + 1, y],
+    [x - 1, y],
+    [x, y + 1],
+    [x, y - 1],
+    [x - 1, y - 1],
+    [x + 1, y + 1],
+  ].map((c) => Position.coordinatesToSquare(c));
 }
