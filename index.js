@@ -6,7 +6,9 @@ window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
   assetsUrl: "../assets/",
   style: { pieces: { file: "pieces/staunty.svg" } },
-  extensions: [{ class: Markers }]
+  extensions: [{ class: Markers }],
+  boardWidth: 24,
+  boardHeight: 20,
 })
 
 window.board.enableMoveInput(inputHandler)

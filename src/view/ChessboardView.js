@@ -11,11 +11,6 @@ import { EXTENSION_POINT } from "../model/Extension.js";
 import { Svg } from "../lib/Svg.js";
 import { Utils } from "../lib/Utils.js";
 
-// TODO(sjayakar): move this into a config
-// ...and eventually abstract it to an arbitrary map.
-const BOARD_WIDTH = 24;
-const BOARD_HEIGHT = 20;
-
 export class ChessboardView {
   constructor(chessboard) {
     this.chessboard = chessboard;
@@ -146,11 +141,11 @@ export class ChessboardView {
     }
     this.innerWidth = this.width - 2 * this.borderSize;
     this.innerHeight = this.height - 2 * this.borderSize;
-    this.squareWidth = this.innerWidth / BOARD_WIDTH;
+    this.squareWidth = this.innerWidth / this.chessboard.props.boardWidth;
     // TODO(sjayakar): consider making this a legit square. so you would want to
     // scale in a way that's ok with cutting off. right now the
     // scaling is kind of coupled for the viewport size & the square
-    this.squareHeight = this.innerHeight / BOARD_HEIGHT;
+    this.squareHeight = this.innerHeight / this.chessboard.props.boardHeight;
     this.scalingX = this.squareWidth / piecesTileSize;
     this.scalingY = this.squareHeight / piecesTileSize;
     this.pieceXTranslate =
@@ -210,7 +205,7 @@ export class ChessboardView {
       borderInner.setAttribute("class", "border-inner");
     }
 
-    for (let i = 0; i < BOARD_WIDTH * BOARD_HEIGHT; i++) {
+    for (let i = 0; i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight; i++) {
       const index =
             this.chessboard.state.orientation === COLOR.white ? i : 63 - i;
 
@@ -220,7 +215,7 @@ export class ChessboardView {
       //
       // TODO(sjayakar): This might create the constraint
       // that widths have to be even...
-      const alternateFactor = Math.floor(index / BOARD_WIDTH);
+      const alternateFactor = Math.floor(index / this.chessboard.props.boardWidth);
       const squareColor = (alternateFactor + index) % 2 === 0 ? "black" : "white";
       // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
@@ -300,7 +295,7 @@ export class ChessboardView {
   redrawPieces(squares = this.chessboard.state.position.squares) {
     const childNodes = Array.from(this.piecesGroup.childNodes);
     const isDragging = this.visualMoveInput.isDragging();
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight; i++) {
       const pieceName = squares[i];
       if (pieceName) {
         const square = Position.indexToSquare(i);
@@ -534,8 +529,8 @@ export class ChessboardView {
   indexToPoint(index) {
     let x, y;
     if (this.chessboard.state.orientation === COLOR.white) {
-      x = this.borderSize + (index % BOARD_WIDTH) * this.squareWidth;
-      y = this.borderSize + ((BOARD_HEIGHT - 1) - Math.floor(index / BOARD_WIDTH)) * this.squareHeight;
+      x = this.borderSize + (index % this.chessboard.props.boardWidth) * this.squareWidth;
+      y = this.borderSize + ((this.chessboard.props.boardHeight - 1) - Math.floor(index / this.chessboard.props.boardWidth)) * this.squareHeight;
     } else {
       // TODO(sjayakar): kind of ignoring orientation.
       x = this.borderSize + (7 - (index % 8)) * this.squareWidth;
