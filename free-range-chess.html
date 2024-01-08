@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>cm-chessboard</title>
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0"/>
+    <link rel="stylesheet" href="examples/styles/examples.css"/>
+    <link rel="stylesheet" href="assets/chessboard.css"/>
+    <link rel="stylesheet" href="assets/extensions/markers/markers.css"/>
+</head>
+<body>
+<h1><a href="index">cm-chessboard</a></h1>
+<h2>Example: Input enabled without validation</h2>
+<p>Input enabled on both sides, without move validation.
+    </p>
+<p>Additionally, the <b>Markers</b> extension is used with its
+    autoMarkers ability.</p>
+<div class="board" id="board"></div>
+<button style="margin-bottom: 10px"
+        onclick="window.board.setOrientation(window.board.getOrientation() === 'w' ? 'b' : 'w')">Switch Orientation
+</button>
+<div id="output" style="width: 100%; overflow: hidden"></div>
+<script type='module' src='./index.js'></script>
+</body>
+</html>
