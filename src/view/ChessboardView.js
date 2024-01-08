@@ -13,7 +13,6 @@ import { Utils } from "../lib/Utils.js";
 
 // TODO(sjayakar): move this into a config
 // ...and eventually abstract it to an arbitrary map.
-
 const BOARD_WIDTH = 24;
 const BOARD_HEIGHT = 20;
 
