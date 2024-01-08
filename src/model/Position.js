@@ -118,9 +118,8 @@ export class Position {
     return coordinates[0] + coordinates[1] * boardWidth;
   }
 
-  // TODO prop the calls
   static indexToSquare(index, boardWidth) {
-    return this.coordinatesToSquare([Math.floor(index % 24), index / 24]);
+    return this.coordinatesToSquare([Math.floor(index % boardWidth), index / boardWidth]);
   }
 
   // This is chess square ("a1") -> 0, 0

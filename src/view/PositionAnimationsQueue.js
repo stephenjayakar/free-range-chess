@@ -84,10 +84,9 @@ const CHANGE_TYPE = {
 };
 
 export class PositionsAnimation {
-  constructor(view, fromPosition, toPosition, duration, callback, boardWidth) {
+  constructor(chessboard, fromPosition, toPosition, duration, callback) {
     // TODO(sjayakar): think about passing this around better
-    this.boardWidth = boardWidth;
-    this.view = view;
+    this.chessboard = chessboard;
     if (fromPosition && toPosition) {
       this.animatedElements = this.createAnimation(
         fromPosition.squares,
@@ -99,8 +98,8 @@ export class PositionsAnimation {
     } else {
       console.error("fromPosition", fromPosition, "toPosition", toPosition);
     }
-    this.view.positionsAnimationTask = Utils.createTask();
-    this.view.chessboard.state.invokeExtensionPoints(
+    chessboard.view.positionsAnimationTask = Utils.createTask();
+    chessboard.view.chessboard.state.invokeExtensionPoints(
       EXTENSION_POINT.animation,
       {
         type: ANIMATION_EVENT_TYPE.start,
@@ -174,23 +173,23 @@ export class PositionsAnimation {
       };
       switch (change.type) {
         case CHANGE_TYPE.move:
-          animatedItem.element = this.view.getPieceElement(
-            Position.indexToSquare(change.atIndex, this.boardWidth)
+          animatedItem.element = this.chessboard.view.getPieceElement(
+            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth)
           );
           animatedItem.element.parentNode.appendChild(animatedItem.element); // move element to top layer
-          animatedItem.atPoint = this.view.indexToPoint(change.atIndex);
-          animatedItem.toPoint = this.view.indexToPoint(change.toIndex);
+          animatedItem.atPoint = this.chessboard.view.indexToPoint(change.atIndex);
+          animatedItem.toPoint = this.chessboard.view.indexToPoint(change.toIndex);
           break;
         case CHANGE_TYPE.appear:
-          animatedItem.element = this.view.drawPieceOnSquare(
-            Position.indexToSquare(change.atIndex, this.boardWidth),
+          animatedItem.element = this.chessboard.view.drawPieceOnSquare(
+            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth),
             change.piece
           );
           animatedItem.element.style.opacity = 0;
           break;
         case CHANGE_TYPE.disappear:
-          animatedItem.element = this.view.getPieceElement(
-            Position.indexToSquare(change.atIndex, this.boardWidth)
+          animatedItem.element = this.chessboard.view.getPieceElement(
+            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth)
           );
           break;
       }
@@ -200,7 +199,7 @@ export class PositionsAnimation {
   }
 
   animationStep(time) {
-    if (!this.view || !this.view.chessboard.state) {
+    if (!this.chessboard.view || !this.chessboard.state) {
       // board was destroyed
       return;
     }
@@ -217,8 +216,8 @@ export class PositionsAnimation {
           Svg.removeElement(animatedItem.element);
         }
       });
-      this.view.positionsAnimationTask.resolve();
-      this.view.chessboard.state.invokeExtensionPoints(
+      this.chessboard.view.positionsAnimationTask.resolve();
+      this.chessboard.state.invokeExtensionPoints(
         EXTENSION_POINT.animation,
         {
           type: ANIMATION_EVENT_TYPE.end,
@@ -237,7 +236,7 @@ export class PositionsAnimation {
         switch (animatedItem.type) {
           case CHANGE_TYPE.move:
             animatedItem.element.transform.baseVal.removeItem(0);
-            const transform = this.view.svg.createSVGTransform();
+            const transform = this.chessboard.view.svg.createSVGTransform();
             transform.setTranslate(
               animatedItem.atPoint.x +
                 (animatedItem.toPoint.x - animatedItem.atPoint.x) * progress,
@@ -259,7 +258,7 @@ export class PositionsAnimation {
         console.warn("animatedItem has no element", animatedItem);
       }
     });
-    this.view.chessboard.state.invokeExtensionPoints(
+    this.chessboard.state.invokeExtensionPoints(
       EXTENSION_POINT.animation,
       {
         type: ANIMATION_EVENT_TYPE.frame,
@@ -268,6 +267,7 @@ export class PositionsAnimation {
     );
   }
 
+  // TODO(sjayakar): rewrite
   static squareDistance(index1, index2) {
     const file1 = index1 % 8;
     const rank1 = Math.floor(index1 / 8);
@@ -301,7 +301,7 @@ export class PositionAnimationsQueue extends PromiseQueue {
               duration = duration / (1 + Math.pow(this.queue.length / 5, 2));
             }
             new PositionsAnimation(
-              this.chessboard.view,
+              this.chessboard,
               positionFrom,
               positionTo,
               animated ? duration : 0,
@@ -312,7 +312,6 @@ export class PositionAnimationsQueue extends PromiseQueue {
                 }
                 resolve();
               },
-              this.chessboard.props.boardWidth,
             );
           })
       );
@@ -331,7 +330,7 @@ export class PositionAnimationsQueue extends PromiseQueue {
             duration = duration / (1 + Math.pow(this.queue.length / 5, 2));
           }
           new PositionsAnimation(
-            this.chessboard.view,
+            this.chessboard,
             position,
             emptyPosition,
             animated ? duration : 0,
@@ -340,7 +339,7 @@ export class PositionAnimationsQueue extends PromiseQueue {
               this.chessboard.view.redrawBoard();
               this.chessboard.view.redrawPieces(emptyPosition.squares);
               new PositionsAnimation(
-                this.chessboard.view,
+                this.chessboard,
                 emptyPosition,
                 position,
                 animated ? duration : 0,
@@ -350,7 +349,6 @@ export class PositionAnimationsQueue extends PromiseQueue {
                 }
               );
             },
-            this.chessboard.props.boardWidth,
           );
         })
     );
