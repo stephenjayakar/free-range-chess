@@ -119,20 +119,18 @@ export class Position {
   }
 
   static indexToSquare(index, boardWidth) {
-    return this.coordinatesToSquare([Math.floor(index % boardWidth), index / boardWidth]);
+    return this.coordinatesToSquare([Math.floor(index % boardWidth), Math.floor(index / boardWidth)]);
   }
 
   // This is chess square ("a1") -> 0, 0
+  // I've converted the notation to `"X,Y"` where X, Y are 0 -> boarddim - 1
   static squareToCoordinates(square) {
-    const file = square.charCodeAt(0) - 97;
-    const rank = square.charCodeAt(1) - 49;
-    return [file, rank];
+    const [file, rank] = square.split(',');
+    return [parseInt(file), parseInt(rank)];
   }
 
   static coordinatesToSquare(coordinates) {
-    const file = String.fromCharCode(coordinates[0] + 97);
-    const rank = String.fromCharCode(coordinates[1] + 49);
-    return file + rank;
+    return coordinates[0].toString() + ',' + coordinates[1].toString()
   }
 
   clone() {
