@@ -16,6 +16,7 @@ export class Position {
     this.boardHeight = boardHeight;
   }
 
+  // TODO(sjayakar): this doesn't work
   setFen(fen = FEN.empty) {
     const parts = fen.replace(/^\s*/, "").replace(/\s*$/, "").split(/\/|\s/);
     for (let part = 0; part < 8; part++) {
@@ -42,6 +43,7 @@ export class Position {
     }
   }
 
+  // TODO(sjayakar): this doesn't work
   getFen() {
     let parts = new Array(8).fill("");
     for (let part = 0; part < 8; part++) {
@@ -72,7 +74,7 @@ export class Position {
     return parts.join("/");
   }
 
-  getPieces(sortBy = ["k", "q", "r", "b", "n", "p"]) {
+  getPieces(sortBy = ["k", "q", "r", "b", "n", "p"], boardWidth) {
     const pieces = [];
     const sort = (a, b) => {
       return sortBy.indexOf(a.name) - sortBy.indexOf(b.name);
@@ -83,7 +85,7 @@ export class Position {
         pieces.push({
           name: piece.charAt(1),
           color: piece.charAt(0),
-          position: Position.indexToSquare(i),
+          position: Position.indexToSquare(i, boardWidth),
         });
       }
     }
@@ -93,34 +95,35 @@ export class Position {
     return pieces;
   }
 
-  movePiece(squareFrom, squareTo) {
-    if (!this.squares[Position.squareToIndex(squareFrom)]) {
+  movePiece(squareFrom, squareTo, boardWidth) {
+    if (!this.squares[Position.squareToIndex(squareFrom, boardWidth)]) {
       console.warn("no piece on", squareFrom);
       return;
     }
-    this.squares[Position.squareToIndex(squareTo)] =
-      this.squares[Position.squareToIndex(squareFrom)];
-    this.squares[Position.squareToIndex(squareFrom)] = null;
+    this.squares[Position.squareToIndex(squareTo, boardWidth)] =
+      this.squares[Position.squareToIndex(squareFrom, boardWidth)];
+    this.squares[Position.squareToIndex(squareFrom, boardWidth)] = null;
   }
 
-  setPiece(square, piece) {
-    this.squares[Position.squareToIndex(square)] = piece;
+  setPiece(square, piece, boardWidth) {
+    this.squares[Position.squareToIndex(square, boardWidth)] = piece;
   }
 
-  getPiece(square) {
-    return this.squares[Position.squareToIndex(square)];
+  getPiece(square, boardWidth) {
+    return this.squares[Position.squareToIndex(square, boardWidth)];
   }
 
   static squareToIndex(square, boardWidth) {
-    console.log(square);
     const coordinates = Position.squareToCoordinates(square);
-    return coordinates[0] + coordinates[1] * 8;
+    return coordinates[0] + coordinates[1] * boardWidth;
   }
 
+  // TODO prop the calls
   static indexToSquare(index, boardWidth) {
-    return this.coordinatesToSquare([Math.floor(index % 8), index / 8]);
+    return this.coordinatesToSquare([Math.floor(index % 24), index / 24]);
   }
 
+  // This is chess square ("a1") -> 0, 0
   static squareToCoordinates(square) {
     const file = square.charCodeAt(0) - 97;
     const rank = square.charCodeAt(1) - 49;

@@ -84,7 +84,9 @@ const CHANGE_TYPE = {
 };
 
 export class PositionsAnimation {
-  constructor(view, fromPosition, toPosition, duration, callback) {
+  constructor(view, fromPosition, toPosition, duration, callback, boardWidth) {
+    // TODO(sjayakar): think about passing this around better
+    this.boardWidth = boardWidth;
     this.view = view;
     if (fromPosition && toPosition) {
       this.animatedElements = this.createAnimation(
@@ -173,7 +175,7 @@ export class PositionsAnimation {
       switch (change.type) {
         case CHANGE_TYPE.move:
           animatedItem.element = this.view.getPieceElement(
-            Position.indexToSquare(change.atIndex)
+            Position.indexToSquare(change.atIndex, this.boardWidth)
           );
           animatedItem.element.parentNode.appendChild(animatedItem.element); // move element to top layer
           animatedItem.atPoint = this.view.indexToPoint(change.atIndex);
@@ -181,14 +183,14 @@ export class PositionsAnimation {
           break;
         case CHANGE_TYPE.appear:
           animatedItem.element = this.view.drawPieceOnSquare(
-            Position.indexToSquare(change.atIndex),
+            Position.indexToSquare(change.atIndex, this.boardWidth),
             change.piece
           );
           animatedItem.element.style.opacity = 0;
           break;
         case CHANGE_TYPE.disappear:
           animatedItem.element = this.view.getPieceElement(
-            Position.indexToSquare(change.atIndex)
+            Position.indexToSquare(change.atIndex, this.boardWidth)
           );
           break;
       }
@@ -309,7 +311,8 @@ export class PositionAnimationsQueue extends PromiseQueue {
                   this.chessboard.view.redrawPieces(positionTo.squares);
                 }
                 resolve();
-              }
+              },
+              this.chessboard.props.boardWidth,
             );
           })
       );
@@ -346,7 +349,8 @@ export class PositionAnimationsQueue extends PromiseQueue {
                   resolve();
                 }
               );
-            }
+            },
+            this.chessboard.props.boardWidth,
           );
         })
     );

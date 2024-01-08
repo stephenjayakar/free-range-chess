@@ -110,23 +110,25 @@ export class Chessboard {
 
   async setPiece(square, piece, animated = false) {
     const positionFrom = this.state.position.clone();
-    this.state.position.setPiece(square, piece);
+    this.state.position.setPiece(square, piece, this.props.boardWidth);
     this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     return this.positionAnimationsQueue.enqueuePositionChange(
       positionFrom,
       this.state.position.clone(),
-      animated
+      animated,
+      this.props.boardWidth,
     );
   }
 
   async movePiece(squareFrom, squareTo, animated = false) {
     const positionFrom = this.state.position.clone();
-    this.state.position.movePiece(squareFrom, squareTo);
+    this.state.position.movePiece(squareFrom, squareTo, this.props.boardWidth);
     this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     return this.positionAnimationsQueue.enqueuePositionChange(
       positionFrom,
       this.state.position.clone(),
-      animated
+      animated,
+      this.props.boardWidth,
     );
   }
 
@@ -140,7 +142,8 @@ export class Chessboard {
     return this.positionAnimationsQueue.enqueuePositionChange(
       positionFrom,
       this.state.position.clone(),
-      animated
+      animated,
+      this.props.boardWidth,
     );
   }
 
@@ -152,7 +155,7 @@ export class Chessboard {
     }
     this.boardTurning = true;
     return this.positionAnimationsQueue
-      .enqueueTurnBoard(position, color, animated)
+      .enqueueTurnBoard(position, color, animated, this.props.boardWidth)
       .then(() => {
         this.boardTurning = false;
         this.state.invokeExtensionPoints(EXTENSION_POINT.boardChanged);
@@ -160,7 +163,7 @@ export class Chessboard {
   }
 
   getPiece(square) {
-    return this.state.position.getPiece(square);
+    return this.state.position.getPiece(square, this.props.boardWidth);
   }
 
   getPosition() {
