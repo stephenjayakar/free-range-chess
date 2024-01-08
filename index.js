@@ -58,15 +58,50 @@ function potentialMoves(chessboard, piece, square) {
   // TODO: branch on piece. assuming pawn
   // TODO: check for collisions
   // - and if it's allied, it's not a valid move
-  // TODO: check square edge collisions
+
+  if (piece[1] !== "p") {
+    return [];
+  }
 
   const [x, y] = Position.squareToCoordinates(square);
-  return [
+  const possibleCoords = [
     [x + 1, y],
     [x - 1, y],
     [x, y + 1],
     [x, y - 1],
     [x - 1, y - 1],
     [x + 1, y + 1],
-  ].map((c) => Position.coordinatesToSquare(c));
+    [x + 1, y - 1],
+    [x - 1, y + 1],
+  ];
+
+  const coords = [];
+  possibleCoords.forEach((c) => {
+    const [cx, cy] = c;
+    // Board boundary condition
+    if (
+      cx < 0 ||
+      cy < 0 ||
+      cx >= chessboard.props.boardWidth ||
+      cy >= chessboard.props.boardHeight
+    ) {
+      return;
+    }
+
+    // Reject if the same team owns a piece in one of the potential move squares
+    const s = Position.coordinatesToSquare(c);
+    const otherPiece = chessboard.getPiece(s);
+    if (otherPiece) {
+      if (otherPiece[0] === piece[0]) {
+        // same team, reject it
+        return;
+      }
+    } else {
+      // TODO: add a bevel somehow...
+      // maybe i can add like "move" vs "attack". we can add other types of moves later
+    }
+    coords.push(c);
+  });
+
+  return coords.map((c) => Position.coordinatesToSquare(c));
 }
