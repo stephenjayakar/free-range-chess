@@ -109,12 +109,13 @@ export class Position {
     return this.squares[Position.squareToIndex(square)];
   }
 
-  static squareToIndex(square) {
+  static squareToIndex(square, boardWidth) {
+    console.log(square)
     const coordinates = Position.squareToCoordinates(square);
     return coordinates[0] + coordinates[1] * 8;
   }
 
-  static indexToSquare(index) {
+  static indexToSquare(index, boardWidth) {
     return this.coordinatesToSquare([Math.floor(index % 8), index / 8]);
   }
 
