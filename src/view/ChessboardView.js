@@ -219,7 +219,7 @@ export class ChessboardView {
       const squareColor = (alternateFactor + index) % 2 === 0 ? "black" : "white";
       // const squareColor = ((9 * index) & 8) === 0 ? "black" : "white";
       const fieldClass = `square ${squareColor}`;
-      const point = this.squareToPoint(Position.indexToSquare(index, this.chessboard.props.boardWidth));
+      const point = this.squareToPoint(Position.indexToSquare(index));
       const squareRect = Svg.addElement(this.boardGroup, "rect", {
         x: point.x,
         y: point.y,
@@ -227,7 +227,7 @@ export class ChessboardView {
         height: this.squareHeight,
       });
       squareRect.setAttribute("class", fieldClass);
-      squareRect.setAttribute("data-square", Position.indexToSquare(index, this.chessboard.props.boardWidth));
+      squareRect.setAttribute("data-square", Position.indexToSquare(index));
     }
   }
 
@@ -295,8 +295,7 @@ export class ChessboardView {
   redrawPieces(squares = this.chessboard.state.position.squares) {
     const childNodes = Array.from(this.piecesGroup.childNodes);
     const isDragging = this.visualMoveInput.isDragging();
-    // TODO(sjayakar) probably have to change this.
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < this.chessboard.props.boardWidth * this.chessboard.props.boardHeight; i++) {
       const pieceName = squares[i];
       if (pieceName) {
         const square = Position.indexToSquare(i);
@@ -541,7 +540,7 @@ export class ChessboardView {
   }
 
   squareToPoint(square) {
-    const index = Position.squareToIndex(square, this.chessboard.props.boardWidth);
+    const index = Position.squareToIndex(square);
     return this.indexToPoint(index);
   }
 

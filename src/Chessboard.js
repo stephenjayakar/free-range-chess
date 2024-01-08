@@ -88,8 +88,9 @@ export class Chessboard {
         /* {class: ExtensionClass, props: { ... }} */
       ], // add extensions here
     };
+    this.props = {...this.props, ...props};
     Utils.mergeObjects(this.props, props);
-    this.state = new ChessboardState();
+    this.state = new ChessboardState(this.props.boardWidth, this.props.boardHeight);
     this.view = new ChessboardView(this);
     this.positionAnimationsQueue = new PositionAnimationsQueue(this);
     this.state.orientation = this.props.orientation;
@@ -98,7 +99,9 @@ export class Chessboard {
       this.addExtension(extensionData.class, extensionData.props);
     }
     this.view.redrawBoard();
-    this.state.position = new Position(this.props.position);
+    // TODO(sjayakar): figure out what's going on with this redraw of
+    // the position?
+    this.state.position = new Position(this.props.position, this.props.boardWidth, this.props.boardHeight);
     this.view.redrawPieces();
     this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     this.initialized = Promise.resolve(); // deprecated 2023-09-19 don't use this anymore
@@ -130,7 +133,7 @@ export class Chessboard {
 
   async setPosition(fen, animated = false) {
     const positionFrom = this.state.position.clone();
-    const positionTo = new Position(fen);
+    const positionTo = new Position(fen, this.props.boardWidth, this.props.boardHeight);
     if (positionFrom.getFen() !== positionTo.getFen()) {
       this.state.position.setFen(fen);
       this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);

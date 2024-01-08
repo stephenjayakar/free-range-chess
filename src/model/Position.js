@@ -9,9 +9,11 @@ export const FEN = {
 };
 
 export class Position {
-  constructor(fen = FEN.empty) {
-    this.squares = new Array(64).fill(null);
+  constructor(fen = FEN.empty, boardWidth, boardHeight) {
+    this.squares = new Array(boardWidth * boardHeight).fill(null);
     this.setFen(fen);
+    this.boardWidth = boardWidth;
+    this.boardHeight = boardHeight;
   }
 
   setFen(fen = FEN.empty) {
@@ -132,7 +134,7 @@ export class Position {
   }
 
   clone() {
-    const cloned = new Position();
+    const cloned = new Position(FEN.empty, this.boardWidth, this.boardHeight);
     cloned.squares = this.squares.slice(0);
     return cloned;
   }
