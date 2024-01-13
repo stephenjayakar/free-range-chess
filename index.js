@@ -1,7 +1,15 @@
 import { INPUT_EVENT_TYPE, Chessboard } from "../src/Chessboard.js";
 import { FEN, Position } from "../src/model/Position.js";
 import { Markers, MARKER_TYPE } from "../src/extensions/markers/Markers.js";
-import { getBishopMoves, getTeam } from "./pieces.js";
+import {
+  getBishopMoves,
+  getPawnMoves,
+  getRookMoves,
+  getKingMoves,
+  getQueenMoves,
+  getKnightMoves,
+  getTeam,
+} from "./pieces.js";
 
 window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
@@ -17,7 +25,7 @@ window.board.enableMoveInput(inputHandler);
 function inputHandler(event) {
   console.log(event);
   switch (event.type) {
-    case INPUT_EVENT_TYPE.moveInputStarted:
+    case INPUT_EVENT_TYPE.moveInputStarted: {
       log(`moveInputStarted: ${event.squareFrom}`);
       const piece = event.chessboard.getPiece(event.squareFrom);
       const moves = potentialMoves(event.chessboard, piece, event.squareFrom);
@@ -26,10 +34,13 @@ function inputHandler(event) {
       });
       // TODO: I think I would plug in the dot rendering method here.
       return true; // false cancels move
-    case INPUT_EVENT_TYPE.validateMoveInput:
+    }
+    case INPUT_EVENT_TYPE.validateMoveInput: {
       log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
-      //       log(`piece: ${window.board.getPiece(event.squareFrom)}`);
-      return true; // false cancels move
+      const piece = event.chessboard.getPiece(event.squareFrom);
+      const moves = potentialMoves(event.chessboard, piece, event.squareFrom);
+      return moves.includes(event.squareTo);
+    }
     case INPUT_EVENT_TYPE.moveInputCanceled:
       log(`moveInputCanceled`);
       event.chessboard.removeMarkers(MARKER_TYPE.dot);
@@ -60,50 +71,23 @@ function potentialMoves(chessboard, piece, square) {
   // TODO: check for collisions
   // - and if it's allied, it's not a valid move
 
-  let coords = [];
-  const [x, y] = Position.squareToCoordinates(square);
+  let retCoords = [];
+  const team = getTeam(piece);
+  const coords = Position.squareToCoordinates(square);
   if (piece[1] === "p") {
-    const possibleCoords = [
-      [x + 1, y],
-      [x - 1, y],
-      [x, y + 1],
-      [x, y - 1],
-      [x - 1, y - 1],
-      [x + 1, y + 1],
-      [x + 1, y - 1],
-      [x - 1, y + 1],
-    ];
-
-    possibleCoords.forEach((c) => {
-      const [cx, cy] = c;
-      // Board boundary condition
-      if (
-        cx < 0 ||
-        cy < 0 ||
-        cx >= chessboard.props.boardWidth ||
-        cy >= chessboard.props.boardHeight
-      ) {
-        return;
-      }
-
-      // Reject if the same team owns a piece in one of the potential move squares
-      const s = Position.coordinatesToSquare(c);
-      const otherPiece = chessboard.getPiece(s);
-      if (otherPiece) {
-        if (otherPiece[0] === piece[0]) {
-          // same team, reject it
-          return;
-        }
-      } else {
-        // TODO: add a bevel somehow...
-        // maybe i can add like "move" vs "attack". we can add other types of moves later
-      }
-      coords.push(c);
-    });
-
-    return coords.map((c) => Position.coordinatesToSquare(c));
+    retCoords = [...getPawnMoves(coords, team, board)];
   } else if (piece[1] === "b") {
-    coords = [...getBishopMoves([x, y], getTeam(piece), board)];
+    retCoords = [...getBishopMoves(coords, team, board)];
+  } else if (piece[1] === "q") {
+    retCoords = [...getQueenMoves(coords, team, board)];
+  } else if (piece[1] === "k") {
+    retCoords = [...getKingMoves(coords, team, board)];
+  } else if (piece[1] === "r") {
+    retCoords = [...getRookMoves(coords, team, board)];
   }
-  return coords.map((c) => Position.coordinatesToSquare(c));
+  // } else if (piece[1] === "n") {
+  //   retCoords = [...getKnightMoves(coords, team, board)];
+  // }
+
+  return retCoords.map((c) => Position.coordinatesToSquare(c));
 }
