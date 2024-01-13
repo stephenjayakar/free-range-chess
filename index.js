@@ -1,7 +1,7 @@
 import { INPUT_EVENT_TYPE, Chessboard } from "../src/Chessboard.js";
 import { FEN, Position } from "../src/model/Position.js";
 import { Markers, MARKER_TYPE } from "../src/extensions/markers/Markers.js";
-import { pathMarchPotentialMoves, getTeam } from "./pieces.js";
+import { getBishopMoves, getTeam } from "./pieces.js";
 
 window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
@@ -103,18 +103,7 @@ function potentialMoves(chessboard, piece, square) {
 
     return coords.map((c) => Position.coordinatesToSquare(c));
   } else if (piece[1] === "b") {
-    coords = [
-      ...pathMarchPotentialMoves(
-        [x, y],
-        // TODO: probably just give in the piece here
-        getTeam(piece),
-        // TODO: unhardcode
-        7,
-        true,
-        false,
-        board
-      ),
-    ];
+    coords = [...getBishopMoves([x, y], getTeam(piece), board)];
   }
   return coords.map((c) => Position.coordinatesToSquare(c));
 }

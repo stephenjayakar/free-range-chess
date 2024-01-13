@@ -1,5 +1,20 @@
 import { Position } from "../src/model/Position.js";
 
+export function getBishopMoves(
+  startCoords,
+  team,
+  board,
+) {
+  return pathMarchPotentialMoves(
+    startCoords,
+    team,
+    7,
+    true,
+    false,
+    board
+  )
+}
+
 // TODO(sjayakar): I would like a test
 export function pathMarchPotentialMoves(
   startCoords,
