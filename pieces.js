@@ -1,5 +1,7 @@
+import { Position } from "../src/model/Position.js";
+
 // TODO(sjayakar): I would like a test
-function pathMarchPotentialMoves(
+export function pathMarchPotentialMoves(
   startCoords,
   team,
   // 1 -> 7; not a requirement
@@ -25,47 +27,54 @@ function pathMarchPotentialMoves(
     let BLBlocked = false;
     let BRBlocked = false;
     for (let i = 1; i <= maxDistance; ++i) {
-      potentiallyAddDirection(
+      TLBlocked = potentiallyAddDirection(
         board,
+        team,
         possibleCoords,
         [startX - i, startY + i],
         TLBlocked,
       );
-      potentiallyAddDirection(
+      TRBlocked = potentiallyAddDirection(
         board,
+        team,
         possibleCoords,
         [startX + i, startY + i],
         TRBlocked,
       );
-      potentiallyAddDirection(
+      BLBlocked = potentiallyAddDirection(
         board,
+        team,
         possibleCoords,
         [startX - i, startY - i],
         BLBlocked,
       );
-      potentiallyAddDirection(
+      BRBlocked = potentiallyAddDirection(
         board,
+        team,
         possibleCoords,
         [startX + i, startY - i],
         BRBlocked,
       );
     }
   }
+  return possibleCoords;
 }
 
 // mutates move list, returns blocked
 function potentiallyAddDirection(
   board,
+  team,
   possibleMoves,
   possibleMove,
   blocked,
 ) {
+  // TODO: add board boundary condition
   if (blocked) {
     return blocked;
   }
 
   const possibleSquare = Position.coordinatesToSquare(
-    possibleCoord,
+    possibleMove,
   );
 
   const possiblePiece = board.getPiece(possibleSquare)
@@ -84,7 +93,7 @@ function potentiallyAddDirection(
   return blocked;
 }
 
-function getTeam(
+export function getTeam(
   piece,
 ) {
   return piece[0];
