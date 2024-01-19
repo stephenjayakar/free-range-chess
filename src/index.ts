@@ -39,6 +39,7 @@ const state: { turn: string } = {
 
 window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
+  log("switchTurn: " + state.turn);
 };
 
 type InputEvent = any;
