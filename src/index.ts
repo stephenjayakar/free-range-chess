@@ -13,7 +13,7 @@ import {
   getQueenMoves,
   getKnightMoves,
   getTeam,
-} from "./pieces.js";
+} from "./pieces";
 
 declare global {
   interface Window {
@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-window.board = new Chessboard(document.getElementById("board"), {
+window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
   position: FEN.start,
   assetsUrl: "/assets/",
   style: { pieces: { file: "pieces/staunty.svg" } },
@@ -33,42 +33,46 @@ window.board = new Chessboard(document.getElementById("board"), {
 
 window.board.enableMoveInput(inputHandler);
 
-const state = {
+const state: { turn: string } = {
   turn: "w",
 };
 
 window.switchTurn = () => {
-  if (state.turn === "w") {
-    state.turn = "b";
-  } else {
-    state.turn = "w";
-  }
+  state.turn = state.turn === "w" ? "b" : "w";
 };
 
-function inputHandler(event) {
+type InputEvent = any;
+
+function inputHandler(event: InputEvent): boolean | void {
   console.log(event);
   switch (event.type) {
     case INPUT_EVENT_TYPE.moveInputStarted: {
       log(`moveInputStarted: ${event.squareFrom}`);
       const piece = event.chessboard.getPiece(event.squareFrom);
 
-      // Make sure it's the team's turn
       const pieceTeam = getTeam(piece);
       if (pieceTeam !== state.turn) {
         return false;
       }
 
-      const moves = potentialMoves(event.chessboard, piece, event.squareFrom);
+      const moves: any[] = potentialMoves(
+        event.chessboard,
+        piece,
+        event.squareFrom
+      );
       moves.forEach((s) => {
         event.chessboard.addMarker(MARKER_TYPE.dot, s);
       });
-      // TODO: I think I would plug in the dot rendering method here.
       return true;
     }
     case INPUT_EVENT_TYPE.validateMoveInput: {
       log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
       const piece = event.chessboard.getPiece(event.squareFrom);
-      const moves = potentialMoves(event.chessboard, piece, event.squareFrom);
+      const moves: any[] = potentialMoves(
+        event.chessboard,
+        piece,
+        event.squareFrom
+      );
       return moves.includes(event.squareTo);
     }
     case INPUT_EVENT_TYPE.moveInputCanceled:
@@ -87,32 +91,33 @@ function inputHandler(event) {
   }
 }
 
-const output = document.getElementById("output");
+const output: HTMLElement = document.getElementById("output") as HTMLElement;
 
-function log(text) {
-  const log = document.createElement("div");
-  log.innerText = text;
-  output.appendChild(log);
+function log(text: string): void {
+  const logElement: HTMLDivElement = document.createElement("div");
+  logElement.innerText = text;
+  output.appendChild(logElement);
 }
 
-// returns a list of squares
-function potentialMoves(chessboard, piece, square) {
-  let retCoords = [];
-  const team = getTeam(piece);
-  const coords = Position.squareToCoordinates(square);
+function potentialMoves(chessboard: any, piece: string, square: string): any[] {
+  let retCoords: any[] = [];
+  const team: string = getTeam(piece);
+  const coords: [number, number] = Position.squareToCoordinates(square);
   if (piece[1] === "p") {
-    retCoords = [...getPawnMoves(coords, team, board)];
+    retCoords = getPawnMoves(coords, team, chessboard);
   } else if (piece[1] === "b") {
-    retCoords = [...getBishopMoves(coords, team, board)];
+    retCoords = getBishopMoves(coords, team, chessboard);
   } else if (piece[1] === "q") {
-    retCoords = [...getQueenMoves(coords, team, board)];
+    retCoords = getQueenMoves(coords, team, chessboard);
   } else if (piece[1] === "k") {
-    retCoords = [...getKingMoves(coords, team, board)];
+    retCoords = getKingMoves(coords, team, chessboard);
   } else if (piece[1] === "r") {
-    retCoords = [...getRookMoves(coords, team, board)];
+    retCoords = getRookMoves(coords, team, chessboard);
   } else if (piece[1] === "n") {
-    retCoords = [...getKnightMoves(coords, team, board)];
+    retCoords = getKnightMoves(coords, team, chessboard);
   }
 
-  return retCoords.map((c) => Position.coordinatesToSquare(c));
+  return retCoords.map((c: [number, number]) =>
+    Position.coordinatesToSquare(c)
+  );
 }
