@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/shaack/cm-chessboard#readme",
   "devDependencies": {
+    "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^6.9.1",
     "html-webpack-plugin": "^5.6.0",
     "style-loader": "^3.3.4",

@@ -17,7 +17,7 @@ import {
 
 window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
-  assetsUrl: "../assets/",
+  assetsUrl: "/assets/",
   style: { pieces: { file: "pieces/staunty.svg" } },
   extensions: [{ class: Markers }],
   boardWidth: 24,
