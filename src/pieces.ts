@@ -1,33 +1,53 @@
 import { Position } from "chessboard/model/Position";
 
-export function getPawnMoves(startCoords, team, board) {
+export function getPawnMoves(
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
   return pathMarchPotentialMoves(startCoords, team, 1, true, true, board);
 }
 
-export function getBishopMoves(startCoords, team, board) {
+export function getBishopMoves(
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
   return pathMarchPotentialMoves(startCoords, team, 7, true, false, board);
 }
 
-export function getRookMoves(startCoords, team, board) {
+export function getRookMoves(
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
   return pathMarchPotentialMoves(startCoords, team, 7, false, true, board);
 }
 
-export function getQueenMoves(startCoords, team, board) {
+export function getQueenMoves(
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
   return pathMarchPotentialMoves(startCoords, team, 7, true, true, board);
 }
 
-export function getKingMoves(startCoords, team, board) {
-  // TODO: add support for checkmate
+export function getKingMoves(
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
+  // TODO: add more king rules
   return getPawnMoves(startCoords, team, board);
 }
 
 export function getKnightMoves(
-  startCoords,
-  team,
-  board,
-) {
+  startCoords: [number, number],
+  team: string,
+  board: any
+): any[] {
   const [x, y] = startCoords;
-  const potentialMoves = [
+  const potentialMoves: [number, number][] = [
     [x + 1, y + 2],
     [x - 1, y + 2],
     [x + 1, y - 2],
@@ -36,41 +56,30 @@ export function getKnightMoves(
     [x - 2, y + 1],
     [x + 2, y - 1],
     [x - 2, y - 1],
-  ]
+  ];
 
   return potentialMoves.filter((m) => {
     if (!moveInBounds(board, m)) {
-      return false
+      return false;
     }
+
     const possibleSquare = Position.coordinatesToSquare(m);
     const possiblePiece = board.getPiece(possibleSquare);
-    if (possiblePiece) {
-      return getTeam(possiblePiece) !== team;
-    } else {
-      return true;
-    }
+    return !possiblePiece || getTeam(possiblePiece) !== team;
   });
-
 }
 
 // TODO(sjayakar): I would like a test
 export function pathMarchPotentialMoves(
-  startCoords,
-  team,
-  // 1 -> 7; not a requirement
-  maxDistance,
-  allowDiagonals,
-  allowStraight,
-  // TODO(sjayakar): consider passing in all the pieces. something to
-  // think about is some pieces _might_ not block movement.
-  //
-  // So what I need is
-  // - board width + height for boundary
-  // - location of all the pieces
-  board
-) {
+  startCoords: [number, number],
+  team: string,
+  maxDistance: number,
+  allowDiagonals: boolean,
+  allowStraight: boolean,
+  board: any
+): any[] {
   const [startX, startY] = startCoords;
-  const possibleCoords = [];
+  const possibleCoords: [number, number][] = [];
 
   if (allowDiagonals) {
     // If any of the directions get blocked, don't add any more moves
@@ -151,22 +160,24 @@ export function pathMarchPotentialMoves(
   return possibleCoords;
 }
 
-function moveInBounds(
-  board,
-  move,
-) {
+function moveInBounds(board: any, move: [number, number]): boolean {
   const [x, y] = move;
-  return !(x < 0 || x >= board.props.boardWidth || y < 0 || y >= board.props.boardHeight);
+  return (
+    x >= 0 &&
+    x < board.props.boardWidth &&
+    y >= 0 &&
+    y < board.props.boardHeight
+  );
 }
 
 // mutates move list, returns blocked
 function potentiallyAddDirection(
-  board,
-  team,
-  possibleMoves,
-  possibleMove,
-  blocked
-) {
+  board: any,
+  team: string,
+  possibleMoves: [number, number][],
+  possibleMove: [number, number],
+  blocked: boolean
+): boolean {
   if (blocked) {
     return blocked;
   }
@@ -193,6 +204,6 @@ function potentiallyAddDirection(
   return blocked;
 }
 
-export function getTeam(piece) {
+export function getTeam(piece: string): string {
   return piece[0];
 }

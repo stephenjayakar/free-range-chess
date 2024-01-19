@@ -1,6 +1,6 @@
-import './css/examples.css';
-import './css/chessboard.css';
-import './css/markers.css';
+import "./css/examples.css";
+import "./css/chessboard.css";
+import "./css/markers.css";
 
 import { INPUT_EVENT_TYPE, Chessboard } from "chessboard/Chessboard";
 import { FEN, Position } from "chessboard/model/Position";
@@ -14,6 +14,13 @@ import {
   getKnightMoves,
   getTeam,
 } from "./pieces.js";
+
+declare global {
+  interface Window {
+    board: any;
+    switchTurn: () => void;
+  }
+}
 
 window.board = new Chessboard(document.getElementById("board"), {
   position: FEN.start,
