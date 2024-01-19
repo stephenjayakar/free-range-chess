@@ -42,7 +42,7 @@ export function getKnightMoves(
     if (!moveInBounds(board, m)) {
       return false
     }
-    const possibleSquare = Position.coordinatesToSquare(possibleMove);
+    const possibleSquare = Position.coordinatesToSquare(m);
     const possiblePiece = board.getPiece(possibleSquare);
     if (possiblePiece) {
       return getTeam(possiblePiece) !== team;
