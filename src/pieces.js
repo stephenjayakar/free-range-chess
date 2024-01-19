@@ -1,4 +1,4 @@
-import { Position } from "../src/model/Position.js";
+import { Position } from "chessboard/model/Position";
 
 export function getPawnMoves(startCoords, team, board) {
   return pathMarchPotentialMoves(startCoords, team, 1, true, true, board);

@@ -1,6 +1,10 @@
-import { INPUT_EVENT_TYPE, Chessboard } from "../src/Chessboard.js";
-import { FEN, Position } from "../src/model/Position.js";
-import { Markers, MARKER_TYPE } from "../src/extensions/markers/Markers.js";
+import './css/examples.css';
+import './css/chessboard.css';
+import './css/markers.css';
+
+import { INPUT_EVENT_TYPE, Chessboard } from "chessboard/Chessboard";
+import { FEN, Position } from "chessboard/model/Position";
+import { Markers, MARKER_TYPE } from "chessboard/extensions/markers/Markers";
 import {
   getBishopMoves,
   getPawnMoves,
