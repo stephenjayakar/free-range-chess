@@ -2,7 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./src/index.js", // Change this to './index.ts' if you rename your JS to TS
+  entry: "./src/index.js",
   module: {
     rules: [
       {
@@ -14,6 +14,18 @@ module.exports = {
         test: /\.css$/,
         use: ["style-loader", "css-loader"],
       },
+      {
+        test: /\.svg$/,
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              outputPath: "assets/",
+              name: "[hash].[ext]",
+            },
+          },
+        ],
+      },
     ],
   },
   resolve: {
@@ -24,7 +36,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./src/index.html", // Path to your HTML file
+      template: "./src/index.html",
     }),
   ],
   output: {
