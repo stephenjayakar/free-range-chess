@@ -33,19 +33,22 @@ window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
 
 window.board.enableMoveInput(inputHandler);
 
-const state: { turn: string } = {
+// TODO: type for movesDone?
+const state: { turn: string; piecesMoved: string[] } = {
   turn: "w",
+  // TODO: maybe a better name / abstraction.
+  piecesMoved: [],
 };
 
 window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
+  state.piecesMoved = [];
   log("switchTurn: " + state.turn);
 };
 
 type InputEvent = any;
 
 function inputHandler(event: InputEvent): boolean | void {
-  console.log(event);
   switch (event.type) {
     case INPUT_EVENT_TYPE.moveInputStarted: {
       log(`moveInputStarted: ${event.squareFrom}`);
@@ -85,6 +88,7 @@ function inputHandler(event: InputEvent): boolean | void {
       log(`moveInputFinished`);
       event.chessboard.removeMarkers(MARKER_TYPE.dot);
       event.chessboard.removeMarkers(MARKER_TYPE.bevel);
+      state.piecesMoved.push(event.squareTo);
       break;
     case INPUT_EVENT_TYPE.movingOverSquare:
       log(`movingOverSquare: ${event.squareTo}`);
@@ -100,10 +104,20 @@ function log(text: string): void {
   output.appendChild(logElement);
 }
 
-function potentialMoves(chessboard: any, piece: string, square: string): any[] {
+// TODO: this function uses state. should probably be passed in.
+function potentialMoves(
+  chessboard: any,
+  piece: string,
+  squareFrom: string
+): any[] {
+  console.log(state.piecesMoved, squareFrom);
+  if (state.piecesMoved.includes(squareFrom)) {
+    return [];
+  }
+
   let retCoords: any[] = [];
   const team: string = getTeam(piece);
-  const coords: [number, number] = Position.squareToCoordinates(square);
+  const coords: [number, number] = Position.squareToCoordinates(squareFrom);
   if (piece[1] === "p") {
     retCoords = getPawnMoves(coords, team, chessboard);
   } else if (piece[1] === "b") {
