@@ -38,8 +38,9 @@ type Team = "w" | "b";
 
 interface Piece {
   position: [number, number];
-  team: Team;
-  type: PIECE_TYPE;
+  // team: Team;
+  type: string;
+  // type: PIECE_TYPE;
 }
 
 interface State {
@@ -52,14 +53,15 @@ const state: State = {
   pieces: [
     {
       position: [0, 0],
-      team: "w",
-      type: PIECE_TYPE.PAWN,
+      type: "wp",
+      // TODO: disambiguate team: "w",
+      // TODO: implement enums type: PIECE_TYPE.PAWN,
     },
   ],
 };
 
 window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
-  position: FEN.start,
+  position: state.pieces,
   assetsUrl: "/assets/",
   style: { pieces: { file: "pieces/staunty.svg" } },
   extensions: [{ class: Markers }],
@@ -73,6 +75,8 @@ window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
   log("switchTurn: " + state.turn);
 };
+
+// window.board.setPositionMeow(state.pieces);
 
 type InputEvent = any;
 

@@ -65,7 +65,7 @@ export class Chessboard {
     this.id = (Math.random() + 1).toString(36).substring(2, 8);
     this.extensions = [];
     this.props = {
-      position: FEN.empty, // set position as fen, use FEN.start or FEN.empty as shortcuts
+      position: [],
       orientation: COLOR.white, // white on bottom
       responsive: true, // resize the board automatically to the size of the context element
       assetsUrl: "./assets/", // put all css and sprites in this folder, will be ignored for absolute urls of assets files
@@ -100,7 +100,8 @@ export class Chessboard {
     this.view.redrawBoard();
     // TODO(sjayakar): figure out what's going on with this redraw of
     // the position?
-    this.state.position = new Position(this.props.position, this.props.boardWidth, this.props.boardHeight);
+    this.state.position = new Position(FEN.start, this.props.boardWidth, this.props.boardHeight);
+    this.state.position.setPosition(props.position);
     this.view.redrawPieces();
     this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     this.initialized = Promise.resolve(); // deprecated 2023-09-19 don't use this anymore
@@ -139,6 +140,18 @@ export class Chessboard {
       this.state.position.setFen(fen);
       this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     }
+    return this.positionAnimationsQueue.enqueuePositionChange(
+      positionFrom,
+      this.state.position.clone(),
+      animated,
+      this.props.boardWidth,
+    );
+  }
+
+  async setPositionMeow(pieces) {
+    const positionFrom = this.state.position.clone();
+    this.state.position.setPosition(pieces);
+    this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     return this.positionAnimationsQueue.enqueuePositionChange(
       positionFrom,
       this.state.position.clone(),
