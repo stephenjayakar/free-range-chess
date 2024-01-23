@@ -22,8 +22,6 @@ export class Position {
     pieces.forEach((p) => {
       const square = Position.coordinatesToSquare(p.position);
       this.setPiece(square, p.type, this.boardWidth)
-      // const index = Position.squareToIndex(square);
-      // this.squares[index] = p.type;
     });
   }
 

@@ -98,8 +98,6 @@ export class Chessboard {
       this.addExtension(extensionData.class, extensionData.props);
     }
     this.view.redrawBoard();
-    // TODO(sjayakar): figure out what's going on with this redraw of
-    // the position?
     this.state.position = new Position(FEN.start, this.props.boardWidth, this.props.boardHeight);
     this.state.position.setPosition(props.position);
     this.view.redrawPieces();
