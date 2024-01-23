@@ -36,7 +36,9 @@ window.board.enableMoveInput(inputHandler);
 // TODO: type for movesDone?
 const state: { turn: string; piecesMoved: string[] } = {
   turn: "w",
-  // TODO: maybe a better name / abstraction.
+  // TODO: maybe a better name / abstraction.  This stores the
+  // destination spaces of pieces. We know that you can't move a piece
+  // again if it is the destination of a move.
   piecesMoved: [],
 };
 
