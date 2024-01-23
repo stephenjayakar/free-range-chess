@@ -16,6 +16,15 @@ export class Position {
     this.boardHeight = boardHeight;
   }
 
+  // pieces is list of pieces
+  setPosition(pieces) {
+    this.squares = [];
+    pieces.forEach((p) => {
+      const square = Position.coordinatesToSquare(p.position);
+      this.setPiece(square, p.type, this.boardWidth)
+    });
+  }
+
   // TODO(sjayakar): this doesn't work
   setFen(fen = FEN.empty) {
     const parts = fen.replace(/^\s*/, "").replace(/\s*$/, "").split(/\/|\s/);
@@ -105,10 +114,12 @@ export class Position {
     this.squares[Position.squareToIndex(squareFrom, boardWidth)] = null;
   }
 
+  // TODO: remove board width
   setPiece(square, piece, boardWidth) {
     this.squares[Position.squareToIndex(square, boardWidth)] = piece;
   }
 
+  // TODO: remove board width
   getPiece(square, boardWidth) {
     return this.squares[Position.squareToIndex(square, boardWidth)];
   }

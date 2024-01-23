@@ -13,6 +13,8 @@ import {
   getQueenMoves,
   getKnightMoves,
   getTeam,
+  startPosition,
+  Piece,
 } from "./pieces";
 
 declare global {
@@ -22,25 +24,45 @@ declare global {
   }
 }
 
-window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
-  position: FEN.start,
-  assetsUrl: "/assets/",
-  style: { pieces: { file: "pieces/staunty.svg" } },
-  extensions: [{ class: Markers }],
-  boardWidth: 24,
-  boardHeight: 20,
-});
+const BOARD_WIDTH = 24;
+const BOARD_HEIGHT = 20;
 
-window.board.enableMoveInput(inputHandler);
+// enum PIECE_TYPE {
+//   PAWN,
+//   ROOK,
+//   KNIGHT,
+//   BISHOP,
+//   KING,
+//   QUEEN,
+// }
 
-// TODO: type for movesDone?
-const state: { turn: string; piecesMoved: string[] } = {
+type Team = "w" | "b";
+
+interface State {
+  turn: Team;
+  pieces: Piece[];
+  piecesMoved: string[];
+}
+
+const state: State = {
   turn: "w",
+  pieces: startPosition(),
   // TODO: maybe a better name / abstraction.  This stores the
   // destination spaces of pieces. We know that you can't move a piece
   // again if it is the destination of a move.
   piecesMoved: [],
 };
+
+window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
+  position: state.pieces,
+  assetsUrl: "/assets/",
+  style: { pieces: { file: "pieces/staunty.svg" } },
+  extensions: [{ class: Markers }],
+  boardWidth: BOARD_WIDTH,
+  boardHeight: BOARD_HEIGHT,
+});
+
+window.board.enableMoveInput(inputHandler);
 
 window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
