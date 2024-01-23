@@ -22,20 +22,52 @@ declare global {
   }
 }
 
+const BOARD_WIDTH = 24;
+const BOARD_HEIGHT = 20;
+
+enum PIECE_TYPE {
+  PAWN,
+  ROOK,
+  KNIGHT,
+  BISHOP,
+  KING,
+  QUEEN,
+}
+
+type Team = "w" | "b";
+
+interface Piece {
+  position: [number, number];
+  team: Team;
+  type: PIECE_TYPE;
+}
+
+interface State {
+  turn: Team;
+  pieces: Piece[];
+}
+
+const state: State = {
+  turn: "w",
+  pieces: [
+    {
+      position: [0, 0],
+      team: "w",
+      type: PIECE_TYPE.PAWN,
+    },
+  ],
+};
+
 window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
   position: FEN.start,
   assetsUrl: "/assets/",
   style: { pieces: { file: "pieces/staunty.svg" } },
   extensions: [{ class: Markers }],
-  boardWidth: 24,
-  boardHeight: 20,
+  boardWidth: BOARD_WIDTH,
+  boardHeight: BOARD_HEIGHT,
 });
 
 window.board.enableMoveInput(inputHandler);
-
-const state: { turn: string } = {
-  turn: "w",
-};
 
 window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
