@@ -16,7 +16,7 @@ export class Position {
     this.boardHeight = boardHeight;
   }
 
-  // pieces is list of pieces
+  // pieces is list of pieces: note pieces is MY abstraction.
   setPosition(pieces) {
     this.squares = [];
     pieces.forEach((p) => {

@@ -347,3 +347,27 @@ export function startPosition(): Piece[] {
     },
   ];
 }
+
+type square = string | null;
+
+// The underlying position format for the board is just a giant array
+// of squares and piece monikers. However, we're using the Pieces[]
+// object to refer to positions as it's significantly more dense of a
+// format, as well as pretty readable.
+export function squaresToPieces(
+  squares: square[],
+  boardWidth: number
+): Piece[] {
+  const pieces = [];
+  for (let i = 0; i < squares.length; ++i) {
+    if (squares[i] != null) {
+      const square = Position.indexToSquare(i, boardWidth);
+      const coords = Position.squareToCoordinates(square);
+      pieces.push({
+        type: squares[i],
+        position: coords,
+      });
+    }
+  }
+  return pieces;
+}

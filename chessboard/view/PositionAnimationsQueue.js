@@ -111,7 +111,7 @@ export class PositionsAnimation {
     const appearedList = [],
       disappearedList = [],
       changes = [];
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < fromSquares.length; i++) {
       const previousSquare = fromSquares[i];
       const newSquare = toSquares[i];
       if (newSquare !== previousSquare) {
@@ -124,7 +124,9 @@ export class PositionsAnimation {
       }
     }
     appearedList.forEach((appeared) => {
-      let shortestDistance = 8;
+      // TODO(SJ): I'm not sure about this one LOL. So it teleports if
+      // it exceeds 9.
+      let shortestDistance = 9;
       let foundMoved = null;
       disappearedList.forEach((disappeared) => {
         if (appeared.piece === disappeared.piece) {
@@ -174,22 +176,35 @@ export class PositionsAnimation {
       switch (change.type) {
         case CHANGE_TYPE.move:
           animatedItem.element = this.chessboard.view.getPieceElement(
-            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth)
+            Position.indexToSquare(
+              change.atIndex,
+              this.chessboard.props.boardWidth
+            )
           );
           animatedItem.element.parentNode.appendChild(animatedItem.element); // move element to top layer
-          animatedItem.atPoint = this.chessboard.view.indexToPoint(change.atIndex);
-          animatedItem.toPoint = this.chessboard.view.indexToPoint(change.toIndex);
+          animatedItem.atPoint = this.chessboard.view.indexToPoint(
+            change.atIndex
+          );
+          animatedItem.toPoint = this.chessboard.view.indexToPoint(
+            change.toIndex
+          );
           break;
         case CHANGE_TYPE.appear:
           animatedItem.element = this.chessboard.view.drawPieceOnSquare(
-            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth),
+            Position.indexToSquare(
+              change.atIndex,
+              this.chessboard.props.boardWidth
+            ),
             change.piece
           );
           animatedItem.element.style.opacity = 0;
           break;
         case CHANGE_TYPE.disappear:
           animatedItem.element = this.chessboard.view.getPieceElement(
-            Position.indexToSquare(change.atIndex, this.chessboard.props.boardWidth)
+            Position.indexToSquare(
+              change.atIndex,
+              this.chessboard.props.boardWidth
+            )
           );
           break;
       }
@@ -217,12 +232,9 @@ export class PositionsAnimation {
         }
       });
       this.chessboard.view.positionsAnimationTask.resolve();
-      this.chessboard.state.invokeExtensionPoints(
-        EXTENSION_POINT.animation,
-        {
-          type: ANIMATION_EVENT_TYPE.end,
-        }
-      );
+      this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.animation, {
+        type: ANIMATION_EVENT_TYPE.end,
+      });
       this.callback();
       return;
     }
@@ -258,13 +270,10 @@ export class PositionsAnimation {
         console.warn("animatedItem has no element", animatedItem);
       }
     });
-    this.chessboard.state.invokeExtensionPoints(
-      EXTENSION_POINT.animation,
-      {
-        type: ANIMATION_EVENT_TYPE.frame,
-        progress: progress,
-      }
-    );
+    this.chessboard.state.invokeExtensionPoints(EXTENSION_POINT.animation, {
+      type: ANIMATION_EVENT_TYPE.frame,
+      progress: progress,
+    });
   }
 
   // TODO(sjayakar): rewrite
@@ -311,7 +320,7 @@ export class PositionAnimationsQueue extends PromiseQueue {
                   this.chessboard.view.redrawPieces(positionTo.squares);
                 }
                 resolve();
-              },
+              }
             );
           })
       );
@@ -348,7 +357,7 @@ export class PositionAnimationsQueue extends PromiseQueue {
                   resolve();
                 }
               );
-            },
+            }
           );
         })
     );

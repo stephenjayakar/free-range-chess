@@ -146,14 +146,16 @@ export class Chessboard {
     );
   }
 
-  async setPositionMeow(pieces) {
+  // SJ: my function. Uses my pieces data structure to set the
+  // underlying board position.
+  async setPieces(pieces) {
     const positionFrom = this.state.position.clone();
     this.state.position.setPosition(pieces);
     this.state.invokeExtensionPoints(EXTENSION_POINT.positionChanged);
     return this.positionAnimationsQueue.enqueuePositionChange(
       positionFrom,
       this.state.position.clone(),
-      animated,
+      true,
       this.props.boardWidth,
     );
   }

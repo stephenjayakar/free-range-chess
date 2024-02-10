@@ -15,26 +15,21 @@ import {
   getTeam,
   startPosition,
   Piece,
+  squaresToPieces,
 } from "./pieces";
 
 declare global {
   interface Window {
     board: any;
     switchTurn: () => void;
+    toggleValidation: () => void;
+    printPieces: () => void;
+    setPieces: (pieces: Piece[]) => void;
   }
 }
 
 const BOARD_WIDTH = 24;
 const BOARD_HEIGHT = 20;
-
-// enum PIECE_TYPE {
-//   PAWN,
-//   ROOK,
-//   KNIGHT,
-//   BISHOP,
-//   KING,
-//   QUEEN,
-// }
 
 type Team = "w" | "b";
 
@@ -42,6 +37,7 @@ interface State {
   turn: Team;
   pieces: Piece[];
   piecesMoved: string[];
+  validationEnabled: boolean;
 }
 
 const state: State = {
@@ -51,6 +47,7 @@ const state: State = {
   // destination spaces of pieces. We know that you can't move a piece
   // again if it is the destination of a move.
   piecesMoved: [],
+  validationEnabled: true,
 };
 
 window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
@@ -68,6 +65,24 @@ window.switchTurn = () => {
   state.turn = state.turn === "w" ? "b" : "w";
   state.piecesMoved = [];
   log("switchTurn: " + state.turn);
+};
+
+window.toggleValidation = () => {
+  state.validationEnabled = !state.validationEnabled;
+  log(
+    "move validation is now " +
+      (state.validationEnabled ? "enabled" : "disabled")
+  );
+};
+
+window.printPieces = () => {
+  console.log(
+    squaresToPieces(window.board.state.position.squares, BOARD_WIDTH)
+  );
+};
+
+window.setPieces = (pieces: Piece[]) => {
+  window.board.setPieces(pieces);
 };
 
 type InputEvent = any;
@@ -94,14 +109,18 @@ function inputHandler(event: InputEvent): boolean | void {
       return true;
     }
     case INPUT_EVENT_TYPE.validateMoveInput: {
-      log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
-      const piece = event.chessboard.getPiece(event.squareFrom);
-      const moves: any[] = potentialMoves(
-        event.chessboard,
-        piece,
-        event.squareFrom
-      );
-      return moves.includes(event.squareTo);
+      if (state.validationEnabled) {
+        log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
+        const piece = event.chessboard.getPiece(event.squareFrom);
+        const moves: any[] = potentialMoves(
+          event.chessboard,
+          piece,
+          event.squareFrom
+        );
+        return moves.includes(event.squareTo);
+      } else {
+        return true;
+      }
     }
     case INPUT_EVENT_TYPE.moveInputCanceled:
       log(`moveInputCanceled`);
