@@ -219,14 +219,11 @@ export function checkIfKingIsThreatened(team: Team, chessboard: any): boolean {
     BOARD_WIDTH
   );
   const pieceType = team + "k";
-  const king = pieces.find((p) => {
-    p.type == pieceType;
-  });
+
+  const king = pieces.find((p) => p.type === pieceType);
 
   const otherTeam = getOtherTeam(team);
-  const otherTeamPieces = pieces.filter((p) => {
-    getTeam(p.type) === otherTeam;
-  });
+  const otherTeamPieces = pieces.filter((p) => getTeam(p.type) === otherTeam);
 
   const pieceThreatensKing = otherTeamPieces.some((p) => {
     const moves = getPieceMoves(chessboard, p.type, otherTeam, p.position);
