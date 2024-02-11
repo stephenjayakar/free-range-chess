@@ -25,6 +25,7 @@ declare global {
     toggleValidation: () => void;
     printPieces: () => void;
     setPieces: (pieces: Piece[]) => void;
+    checkIfCheck: () => void;
   }
 }
 
@@ -32,6 +33,12 @@ const BOARD_WIDTH = 24;
 const BOARD_HEIGHT = 20;
 
 type Team = "w" | "b";
+
+type Coords = [number, number];
+
+function getOtherTeam(team: Team): Team {
+  return team == "w" ? "b" : "w";
+}
 
 interface State {
   turn: Team;
@@ -62,7 +69,7 @@ window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
 window.board.enableMoveInput(inputHandler);
 
 window.switchTurn = () => {
-  state.turn = state.turn === "w" ? "b" : "w";
+  state.turn = getOtherTeam(state.turn);
   state.piecesMoved = [];
   log("switchTurn: " + state.turn);
 };
@@ -83,6 +90,12 @@ window.printPieces = () => {
 
 window.setPieces = (pieces: Piece[]) => {
   window.board.setPieces(pieces);
+};
+
+window.checkIfCheck = (): void => {
+  const team = state.turn;
+  const isCheck = checkIfKingIsThreatened(team, window.board);
+  log(`team ${team} check status: ${isCheck}`);
 };
 
 type InputEvent = any;
@@ -153,29 +166,74 @@ function potentialMoves(
   piece: string,
   squareFrom: string
 ): any[] {
-  console.log(state.piecesMoved, squareFrom);
   if (state.piecesMoved.includes(squareFrom)) {
     return [];
   }
 
-  let retCoords: any[] = [];
   const team: string = getTeam(piece);
-  const coords: [number, number] = Position.squareToCoordinates(squareFrom);
-  if (piece[1] === "p") {
-    retCoords = getPawnMoves(coords, team, chessboard);
-  } else if (piece[1] === "b") {
-    retCoords = getBishopMoves(coords, team, chessboard);
-  } else if (piece[1] === "q") {
-    retCoords = getQueenMoves(coords, team, chessboard);
-  } else if (piece[1] === "k") {
-    retCoords = getKingMoves(coords, team, chessboard);
-  } else if (piece[1] === "r") {
-    retCoords = getRookMoves(coords, team, chessboard);
-  } else if (piece[1] === "n") {
-    retCoords = getKnightMoves(coords, team, chessboard);
-  }
+  const coords: Coords = Position.squareToCoordinates(squareFrom);
+  const retCoords = getPieceMoves(chessboard, piece, team, coords);
 
-  return retCoords.map((c: [number, number]) =>
-    Position.coordinatesToSquare(c)
+  return retCoords.map((c: Coords) => Position.coordinatesToSquare(c));
+}
+
+function getPieceMoves(
+  chessboard: any,
+  // TODO: consider refactoring to use `Piece` as then you don't have to pass in coords separately.
+  piece: string,
+  team: string,
+  coords: Coords
+): Coords[] {
+  if (piece[1] === "p") {
+    return getPawnMoves(coords, team, chessboard);
+  } else if (piece[1] === "b") {
+    return getBishopMoves(coords, team, chessboard);
+  } else if (piece[1] === "q") {
+    return getQueenMoves(coords, team, chessboard);
+  } else if (piece[1] === "k") {
+    return getKingMoves(coords, team, chessboard);
+  } else if (piece[1] === "r") {
+    return getRookMoves(coords, team, chessboard);
+  } else if (piece[1] === "n") {
+    return getKnightMoves(coords, team, chessboard);
+  } else {
+    return [];
+  }
+}
+
+function coordsEqual(c1: Coords, c2: Coords): boolean {
+  return c1[0] === c2[0] && c1[1] === c2[1];
+}
+
+// Essentially checks if the king is in check. It's weird to say
+// "checkCheck" though LOL.
+//
+// High level:
+// 1. Find the king
+// 2. Check all the other pieces on the
+// other team, and see if any of their potential moves include the
+// king in it.
+export function checkIfKingIsThreatened(team: Team, chessboard: any): boolean {
+  const pieces = squaresToPieces(
+    chessboard.state.position.squares,
+    BOARD_WIDTH
   );
+  const pieceType = team + "k";
+  const king = pieces.find((p) => {
+    p.type == pieceType;
+  });
+
+  const otherTeam = getOtherTeam(team);
+  const otherTeamPieces = pieces.filter((p) => {
+    getTeam(p.type) === otherTeam;
+  });
+
+  const pieceThreatensKing = otherTeamPieces.some((p) => {
+    const moves = getPieceMoves(chessboard, p.type, otherTeam, p.position);
+    const moveIncludesKing = moves.some((m) => {
+      return coordsEqual(m, king.position);
+    });
+    return moveIncludesKing;
+  });
+  return pieceThreatensKing;
 }
