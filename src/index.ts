@@ -45,6 +45,9 @@ interface State {
   pieces: Piece[];
   piecesMoved: string[];
   validationEnabled: boolean;
+  // TODO: remove this (make it derived from winner)
+  gameOver: boolean;
+  winner: Team | null;
 }
 
 const state: State = {
@@ -55,6 +58,8 @@ const state: State = {
   // again if it is the destination of a move.
   piecesMoved: [],
   validationEnabled: true,
+  gameOver: false,
+  winner: null,
 };
 
 window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
@@ -68,10 +73,42 @@ window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
 
 window.board.enableMoveInput(inputHandler);
 
+function updateGameStatus(message: string): void {
+  const statusElement = document.getElementById("statusMessage") as HTMLElement;
+  statusElement.innerText = message;
+}
+
+function updateGameOver(winner: Team): void {
+  const winnerElement = document.getElementById("winnerMessage") as HTMLElement;
+  winnerElement.innerText = `Game Over - Winner: ${winner.toUpperCase()}`;
+}
+
+function checkAndDisplayCheck(): void {
+  const inCheck = checkIfKingIsThreatened(state.turn, window.board);
+  if (inCheck) {
+    updateGameStatus(`${state.turn.toUpperCase()} is in check`);
+  } else {
+    updateGameStatus(""); // Clear status message if not in check
+  }
+}
+
 window.switchTurn = () => {
-  state.turn = getOtherTeam(state.turn);
-  state.piecesMoved = [];
-  log("switchTurn: " + state.turn);
+  if (state.gameOver) {
+    log("The game is over. No more turns allowed.");
+    return;
+  }
+
+  const inCheck = checkIfKingIsThreatened(state.turn, window.board);
+  if (inCheck) {
+    state.gameOver = true;
+    state.winner = getOtherTeam(state.turn);
+    updateGameStatus(`Game Over - ${state.turn.toUpperCase()} lost.`);
+  } else {
+    state.turn = getOtherTeam(state.turn);
+    state.piecesMoved = [];
+    log("switchTurn: " + state.turn);
+    checkAndDisplayCheck();
+  }
 };
 
 window.toggleValidation = () => {

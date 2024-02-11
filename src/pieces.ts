@@ -215,7 +215,10 @@ export interface Piece {
   // type: PIECE_TYPE;
 }
 
-export function startPosition(): Piece[] {
+export function startPosition(
+  boardWidth: number,
+  boardHeight: number
+): Piece[] {
   return [
     {
       position: [0, 1],
