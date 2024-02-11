@@ -45,8 +45,6 @@ interface State {
   pieces: Piece[];
   piecesMoved: string[];
   validationEnabled: boolean;
-  // TODO: remove this (make it derived from winner)
-  gameOver: boolean;
   winner: Team | null;
 }
 
@@ -58,7 +56,6 @@ const state: State = {
   // again if it is the destination of a move.
   piecesMoved: [],
   validationEnabled: true,
-  gameOver: false,
   winner: null,
 };
 
@@ -78,11 +75,6 @@ function updateGameStatus(message: string): void {
   statusElement.innerText = message;
 }
 
-function updateGameOver(winner: Team): void {
-  const winnerElement = document.getElementById("winnerMessage") as HTMLElement;
-  winnerElement.innerText = `Game Over - Winner: ${winner.toUpperCase()}`;
-}
-
 function checkAndDisplayCheck(): void {
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
@@ -93,14 +85,13 @@ function checkAndDisplayCheck(): void {
 }
 
 window.switchTurn = () => {
-  if (state.gameOver) {
+  if (state.winner) {
     log("The game is over. No more turns allowed.");
     return;
   }
 
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
-    state.gameOver = true;
     state.winner = getOtherTeam(state.turn);
     updateGameStatus(`Game Over - ${state.turn.toUpperCase()} lost.`);
   } else {
