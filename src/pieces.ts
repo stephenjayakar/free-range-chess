@@ -285,68 +285,68 @@ export function startPosition(
       type: "wk",
     },
     {
-      position: [23, 18],
+      position: [boardWidth - 1, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [22, 18],
+      position: [boardWidth - 2, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [21, 18],
+      position: [boardWidth - 3, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [20, 18],
+      position: [boardWidth - 4, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [19, 18],
+      position: [boardWidth - 5, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [18, 18],
+      position: [boardWidth - 6, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [17, 18],
+      position: [boardWidth - 7, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [16, 18],
+      position: [boardWidth - 8, boardHeight - 2],
       type: "bp",
     },
     {
-      position: [23, 19],
+      position: [boardWidth - 1, boardHeight - 1],
       type: "br",
     },
     {
-      position: [22, 19],
+      position: [boardWidth - 2, boardHeight - 1],
       type: "bn",
     },
     {
-      position: [21, 19],
+      position: [boardWidth - 3, boardHeight - 1],
       type: "bb",
     },
     {
-      position: [16, 19],
-      type: "br",
-    },
-    {
-      position: [17, 19],
-      type: "bn",
-    },
-    {
-      position: [18, 19],
-      type: "bb",
-    },
-    {
-      position: [20, 19],
+      position: [boardWidth - 4, boardHeight - 1],
       type: "bq",
     },
     {
-      position: [19, 19],
+      position: [boardWidth - 5, boardHeight - 1],
       type: "bk",
+    },
+    {
+      position: [boardWidth - 6, boardHeight - 1],
+      type: "bb",
+    },
+    {
+      position: [boardWidth - 7, boardHeight - 1],
+      type: "bn",
+    },
+    {
+      position: [boardWidth - 8, boardHeight - 1],
+      type: "br",
     },
   ];
 }

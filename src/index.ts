@@ -29,8 +29,8 @@ declare global {
   }
 }
 
-const BOARD_WIDTH = 24;
-const BOARD_HEIGHT = 20;
+const BOARD_WIDTH = 10;
+const BOARD_HEIGHT = 10;
 
 type Team = "w" | "b";
 
@@ -52,7 +52,7 @@ interface State {
 
 const state: State = {
   turn: "w",
-  pieces: startPosition(),
+  pieces: startPosition(BOARD_WIDTH, BOARD_HEIGHT),
   // TODO: maybe a better name / abstraction.  This stores the
   // destination spaces of pieces. We know that you can't move a piece
   // again if it is the destination of a move.
@@ -167,6 +167,13 @@ function inputHandler(event: InputEvent): boolean | void {
           piece,
           event.squareFrom
         );
+
+        // Don't allow the king to be taken
+        const potentialOtherPiece = event.chessboard.getPiece(event.squareTo);
+        if (potentialOtherPiece && potentialOtherPiece[1] == "k") {
+          return false;
+        }
+
         return moves.includes(event.squareTo);
       } else {
         return true;
