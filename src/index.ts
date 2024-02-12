@@ -95,6 +95,11 @@ window.switchTurn = () => {
     return;
   }
 
+  // Don't allow people to end turn without making any moves.
+  if (state.piecesMoved.length === 0) {
+    return;
+  }
+
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
     state.winner = getOtherTeam(state.turn);
