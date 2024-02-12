@@ -1,53 +1,74 @@
 import { Position } from "chessboard/model/Position";
 
+export type Coords = [number, number];
+
+export type Team = "w" | "b";
+
+export function getOtherTeam(team: Team): Team {
+  return team == "w" ? "b" : "w";
+}
+
 export function getPawnMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   board: any
-): any[] {
+): Coords[] {
   return pathMarchPotentialMoves(startCoords, team, 1, true, true, board);
 }
 
 export function getBishopMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   board: any
-): any[] {
+): Coords[] {
   return pathMarchPotentialMoves(startCoords, team, 7, true, false, board);
 }
 
 export function getRookMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   board: any
-): any[] {
+): Coords[] {
   return pathMarchPotentialMoves(startCoords, team, 7, false, true, board);
 }
 
 export function getQueenMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   board: any
-): any[] {
+): Coords[] {
   return pathMarchPotentialMoves(startCoords, team, 7, true, true, board);
 }
 
 export function getKingMoves(
-  startCoords: [number, number],
-  team: string,
+  startCoords: Coords,
+  team: Team,
   board: any
-): any[] {
-  // TODO: add more king rules
-  return getPawnMoves(startCoords, team, board);
+): Coords[] {
+  const pawnMoves = getPawnMoves(startCoords, team, board);
+
+  const otherKing = `${getOtherTeam(team)}k`;
+
+  // Make sure none of the moves are neighboring the other king. From
+  // a high level, get the pawn moves of every pawn move and see if it
+  // includes the other team's king. Kind of sus but it works.
+
+  return pawnMoves.filter((pm) => {
+    const neighboringMoves = getPawnMoves(pm, team, board);
+    const movesContainsKing = neighboringMoves.some(
+      (nm) => coordsToPiece(nm, board) === otherKing
+    );
+    return !movesContainsKing;
+  });
 }
 
 export function getKnightMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   board: any
-): any[] {
+): Coords[] {
   const [x, y] = startCoords;
-  const potentialMoves: [number, number][] = [
+  const potentialMoves: Coords[] = [
     [x + 1, y + 2],
     [x - 1, y + 2],
     [x + 1, y - 2],
@@ -71,15 +92,15 @@ export function getKnightMoves(
 
 // TODO(sjayakar): I would like a test
 export function pathMarchPotentialMoves(
-  startCoords: [number, number],
+  startCoords: Coords,
   team: string,
   maxDistance: number,
   allowDiagonals: boolean,
   allowStraight: boolean,
   board: any
-): any[] {
+): Coords[] {
   const [startX, startY] = startCoords;
-  const possibleCoords: [number, number][] = [];
+  const possibleCoords: Coords[] = [];
 
   if (allowDiagonals) {
     // If any of the directions get blocked, don't add any more moves
@@ -160,7 +181,7 @@ export function pathMarchPotentialMoves(
   return possibleCoords;
 }
 
-function moveInBounds(board: any, move: [number, number]): boolean {
+function moveInBounds(board: any, move: Coords): boolean {
   const [x, y] = move;
   return (
     x >= 0 &&
@@ -174,8 +195,8 @@ function moveInBounds(board: any, move: [number, number]): boolean {
 function potentiallyAddDirection(
   board: any,
   team: string,
-  possibleMoves: [number, number][],
-  possibleMove: [number, number],
+  possibleMoves: Coords[],
+  possibleMove: Coords,
   blocked: boolean
 ): boolean {
   if (blocked) {
@@ -204,15 +225,46 @@ function potentiallyAddDirection(
   return blocked;
 }
 
-export function getTeam(piece: string): string {
-  return piece[0];
+export function getTeam(piece: string): Team {
+  return piece[0] as Team;
 }
 
 export interface Piece {
-  position: [number, number];
+  position: Coords;
   // team: Team;
   type: string;
   // type: PIECE_TYPE;
+}
+
+// TODO: probably make this part of the board API once it's typescript.
+function coordsToPiece(c: Coords, board: any): string | null {
+  const square = Position.coordinatesToSquare(c);
+
+  return board.getPiece(square);
+}
+
+type square = string | null;
+
+// The underlying position format for the board is just a giant array
+// of squares and piece monikers. However, we're using the Pieces[]
+// object to refer to positions as it's significantly more dense of a
+// format, as well as pretty readable.
+export function squaresToPieces(
+  squares: square[],
+  boardWidth: number
+): Piece[] {
+  const pieces = [];
+  for (let i = 0; i < squares.length; ++i) {
+    if (squares[i] != null) {
+      const square = Position.indexToSquare(i, boardWidth);
+      const coords = Position.squareToCoordinates(square);
+      pieces.push({
+        type: squares[i],
+        position: coords,
+      });
+    }
+  }
+  return pieces;
 }
 
 export function startPosition(
@@ -349,28 +401,4 @@ export function startPosition(
       type: "br",
     },
   ];
-}
-
-type square = string | null;
-
-// The underlying position format for the board is just a giant array
-// of squares and piece monikers. However, we're using the Pieces[]
-// object to refer to positions as it's significantly more dense of a
-// format, as well as pretty readable.
-export function squaresToPieces(
-  squares: square[],
-  boardWidth: number
-): Piece[] {
-  const pieces = [];
-  for (let i = 0; i < squares.length; ++i) {
-    if (squares[i] != null) {
-      const square = Position.indexToSquare(i, boardWidth);
-      const coords = Position.squareToCoordinates(square);
-      pieces.push({
-        type: squares[i],
-        position: coords,
-      });
-    }
-  }
-  return pieces;
 }

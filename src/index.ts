@@ -16,6 +16,9 @@ import {
   startPosition,
   Piece,
   squaresToPieces,
+  Coords,
+  Team,
+  getOtherTeam,
 } from "./pieces";
 
 declare global {
@@ -31,14 +34,6 @@ declare global {
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 10;
-
-type Team = "w" | "b";
-
-type Coords = [number, number];
-
-function getOtherTeam(team: Team): Team {
-  return team == "w" ? "b" : "w";
-}
 
 interface State {
   turn: Team;
@@ -80,12 +75,12 @@ function updateTurnMessage(message: string): void {
   turnElement.innerText = message;
 }
 
-function checkAndDisplayCheck(): void {
+function startTurnChecks(): void {
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
     updateGameStatus(`${state.turn.toUpperCase()} is in check`);
   } else {
-    updateGameStatus(""); // Clear status message if not in check
+    updateGameStatus("");
   }
 }
 
@@ -109,7 +104,7 @@ window.switchTurn = () => {
     state.piecesMoved = [];
     log("switchTurn: " + state.turn);
     updateTurnMessage(`Turn: ${state.turn === "w" ? "White" : "Black"}`);
-    checkAndDisplayCheck();
+    startTurnChecks();
   }
 };
 
@@ -216,7 +211,7 @@ function potentialMoves(
     return [];
   }
 
-  const team: string = getTeam(piece);
+  const team = getTeam(piece);
   const coords: Coords = Position.squareToCoordinates(squareFrom);
   const retCoords = getPieceMoves(chessboard, piece, team, coords);
 
@@ -227,7 +222,7 @@ function getPieceMoves(
   chessboard: any,
   // TODO: consider refactoring to use `Piece` as then you don't have to pass in coords separately.
   piece: string,
-  team: string,
+  team: Team,
   coords: Coords
 ): Coords[] {
   if (piece[1] === "p") {
