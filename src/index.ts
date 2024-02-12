@@ -3,7 +3,7 @@ import "./css/chessboard.css";
 import "./css/markers.css";
 
 import { INPUT_EVENT_TYPE, Chessboard } from "chessboard/Chessboard";
-import { FEN, Position } from "chessboard/model/Position";
+import { Position } from "chessboard/model/Position";
 import { Markers, MARKER_TYPE } from "chessboard/extensions/markers/Markers";
 import {
   getBishopMoves,
@@ -21,6 +21,8 @@ import {
   getOtherTeam,
 } from "./pieces";
 
+import { randomMoves } from "./ai";
+
 declare global {
   interface Window {
     board: any;
@@ -29,13 +31,14 @@ declare global {
     printPieces: () => void;
     setPieces: (pieces: Piece[]) => void;
     checkIfCheck: () => void;
+    runAI: () => void;
   }
 }
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 10;
 
-interface State {
+export interface State {
   turn: Team;
   pieces: Piece[];
   piecesMoved: string[];
@@ -132,6 +135,12 @@ window.checkIfCheck = (): void => {
   log(`team ${team} check status: ${isCheck}`);
 };
 
+window.runAI = (): void => {
+  const team = state.turn;
+  log("running the AI for the current team");
+  randomMoves(window.board, team, state);
+};
+
 type InputEvent = any;
 
 function inputHandler(event: InputEvent): boolean | void {
@@ -202,7 +211,8 @@ function log(text: string): void {
 }
 
 // TODO: this function uses state. should probably be passed in.
-function potentialMoves(
+// TODO: this abstraction doesn't make sense with `getPieceMoves`
+export function potentialMoves(
   chessboard: any,
   piece: string,
   squareFrom: string
