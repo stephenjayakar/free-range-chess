@@ -75,6 +75,11 @@ function updateGameStatus(message: string): void {
   statusElement.innerText = message;
 }
 
+function updateTurnMessage(message: string): void {
+  const turnElement = document.getElementById("turnMessage") as HTMLElement;
+  turnElement.innerText = message;
+}
+
 function checkAndDisplayCheck(): void {
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
@@ -98,6 +103,7 @@ window.switchTurn = () => {
     state.turn = getOtherTeam(state.turn);
     state.piecesMoved = [];
     log("switchTurn: " + state.turn);
+    updateTurnMessage(`Turn: ${state.turn === "w" ? "White" : "Black"}`);
     checkAndDisplayCheck();
   }
 };
