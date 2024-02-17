@@ -43,6 +43,9 @@ export class ChessboardView {
     });
     this.createSvgAndGroups();
     this.handleResize();
+
+    // TODO(sjayakar): not sure about storing this here
+    this.greyedOutIndexes = []
   }
 
   pointerDownHandler(e) {
@@ -313,7 +316,9 @@ export class ChessboardView {
         this.drawPieceOnSquare(
           square,
           pieceName,
-          isDragging && square === this.visualMoveInput.fromSquare
+          isDragging && square === this.visualMoveInput.fromSquare,
+          // TODO: this be sussy
+          this.greyedOutIndexes.includes(i),
         );
       }
     }
@@ -341,12 +346,15 @@ export class ChessboardView {
     return pieceGroup;
   }
 
-  drawPieceOnSquare(square, pieceName, hidden = false) {
+  drawPieceOnSquare(square, pieceName, hidden = false, greyedOut = false) {
     const pieceGroup = Svg.addElement(this.piecesGroup, "g", {});
     pieceGroup.setAttribute("data-piece", pieceName);
     pieceGroup.setAttribute("data-square", square);
     if (hidden) {
       pieceGroup.setAttribute("visibility", "hidden");
+    }
+    if (greyedOut) {
+      pieceGroup.classList.add('greyed-out');
     }
     const point = this.squareToPoint(square);
     const transform = this.svg.createSVGTransform();
@@ -381,6 +389,15 @@ export class ChessboardView {
     } else {
       console.warn("no piece on", square);
     }
+  }
+
+  setPieceGreyedOut(square) {
+    const index = Position.squareToIndex(square, this.chessboard.props.boardWidth);
+    this.greyedOutIndexes.push(index);
+  }
+
+  clearGreyedPieces() {
+    this.greyedOutIndexes = [];
   }
 
   getPieceElement(square) {

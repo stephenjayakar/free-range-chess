@@ -104,6 +104,11 @@ window.switchTurn = () => {
     state.piecesMoved = [];
     log("switchTurn: " + state.turn);
     updateTurnMessage(`Turn: ${state.turn === "w" ? "White" : "Black"}`);
+
+    // Ungrey the pieces
+    window.board.view.clearGreyedPieces();
+    window.board.view.redrawPieces();
+
     startTurnChecks();
   }
 };
@@ -186,6 +191,7 @@ function inputHandler(event: InputEvent): boolean | void {
       event.chessboard.removeMarkers(MARKER_TYPE.dot);
       event.chessboard.removeMarkers(MARKER_TYPE.bevel);
       state.piecesMoved.push(event.squareTo);
+      event.chessboard.view.setPieceGreyedOut(event.squareTo, true);
       break;
     case INPUT_EVENT_TYPE.movingOverSquare:
       log(`movingOverSquare: ${event.squareTo}`);
