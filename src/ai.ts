@@ -30,6 +30,7 @@ export function randomMoves(board: any, team: Team, state: State) {
         const squareTo = moves[moveIndex];
 
         board.movePiece(squareFrom, squareTo, true);
+        board.view.setPieceGreyedOut(squareTo, true);
         pieceMoved = true;
         // TODO: Fuck this
         state.piecesMoved.push(squareTo);
