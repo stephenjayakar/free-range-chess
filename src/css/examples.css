@@ -10,12 +10,17 @@ body {
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
+  transition: background-color 0.3s ease;
 }
 
 .main-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  background-color: #333;
 }
 
 .log-container {
@@ -23,14 +28,23 @@ body {
   overflow-y: auto;
   margin-left: 20px;
   width: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: #444;
 }
 
 a {
-  color: #516CD4; }
-  a:visited {
-    color: #929292; }
-  a:hover {
-    color: #E2FEDE; }
+  color: #516CD4;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+a:visited {
+  color: #929292;
+}
+a:hover {
+  color: #E2FEDE;
+  text-decoration: underline;
+}
 
 h1, h1 a {
   margin-top: 0;
@@ -69,17 +83,21 @@ div.board {
   display: table; }
 
 button {
-  padding: 5px 20px;
+  padding: 10px 25px;
   font-size: 92%;
   margin-right: 10px;
   margin-bottom: 10px;
-  background-color: #999;
+  background-color: #CD7338;
   color: black;
   border: none;
-  border-radius: 3px;
-  cursor: pointer; }
-  button:hover {
-    background-color: #777; }
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+button:hover {
+  background-color: #777;
+  transform: translateY(-2px);
+}
 
 input[type=text] {
   font-size: 92%;
