@@ -6,28 +6,22 @@
     <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0"/>
 </head>
 <body>
-  <h2>free-range-chess</h2>
-  <i>It's organic too :)</i>
-<div id="statusMessage" style="color: red; font-weight: bold;"></div>
-<div id="winnerMessage" style="color: green; font-weight: bold;"></div>
-<div id="turnMessage">Turn: White</div>
-<div class="board" id="board"></div>
-<button style="margin-bottom: 10px"
-        onclick="switchTurn()">End Turn
-</button>
-<button style="margin-bottom: 10px"
-        onclick="toggleValidation()">Toggle move validation
-</button>
-<button style="margin-bottom: 10px"
-        onclick="printPieces()">Print board
-</button>
-<button style="margin-bottom: 10px"
-        onclick="checkIfCheck()">Check if check
-</button>
-<button style="margin-bottom: 10px"
-        onclick="runAI()">Run AI
-</button>
-<div id="output" style="width: 100%; overflow: hidden"></div>
+  <div class="main-content">
+    <h2>free-range-chess</h2>
+    <i>It's organic too :)</i>
+  <div id="statusMessage" style="color: red; font-weight: bold;"></div>
+  <div id="winnerMessage" style="color: green; font-weight: bold;"></div>
+  <div id="turnMessage">Turn: White</div>
+  <div class="board" id="board"></div>
+  <div class="controls">
+    <button style="margin-bottom: 10px" onclick="switchTurn()">End Turn</button>
+    <button style="margin-bottom: 10px" onclick="toggleValidation()">Toggle move validation</button>
+    <button style="margin-bottom: 10px" onclick="printPieces()">Print board</button>
+    <button style="margin-bottom: 10px" onclick="checkIfCheck()">Check if check</button>
+    <button style="margin-bottom: 10px" onclick="runAI()">Run AI</button>
+  </div>
+</div>
+<div id="output" class="log-container"></div>
 <script type='module' src='./index.js'></script>
 </body>
 </html>
