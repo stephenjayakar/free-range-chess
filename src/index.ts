@@ -3,7 +3,7 @@ import "./css/chessboard.css";
 import "./css/markers.css";
 
 import { INPUT_EVENT_TYPE, Chessboard } from "chessboard/Chessboard";
-import { FEN, Position } from "chessboard/model/Position";
+import { Position } from "chessboard/model/Position";
 import { Markers, MARKER_TYPE } from "chessboard/extensions/markers/Markers";
 import {
   getBishopMoves,
@@ -21,6 +21,8 @@ import {
   getOtherTeam,
 } from "./pieces";
 
+import { randomMoves, aggressiveMoves } from "./ai";
+
 declare global {
   interface Window {
     board: any;
@@ -29,13 +31,15 @@ declare global {
     printPieces: () => void;
     setPieces: (pieces: Piece[]) => void;
     checkIfCheck: () => void;
+    runAI: () => void;
+    aiModel: string;
   }
 }
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 10;
 
-interface State {
+export interface State {
   turn: Team;
   pieces: Piece[];
   piecesMoved: string[];
@@ -137,6 +141,21 @@ window.checkIfCheck = (): void => {
   log(`team ${team} check status: ${isCheck}`);
 };
 
+window.aiModel = "random";
+
+window.runAI = (): void => {
+  const aiSelector = document.getElementById("aiSelector") as HTMLSelectElement;
+  window.aiModel = aiSelector.value;
+  const team = state.turn;
+  log("running the AI for the current team");
+  if (window.aiModel === "random") {
+    randomMoves(window.board, team, state);
+  } else if (window.aiModel === "aggressive") {
+    aggressiveMoves(window.board, team, state);
+  }
+  // Future AI models can be added here with else if statements
+};
+
 type InputEvent = any;
 
 function inputHandler(event: InputEvent): boolean | void {
@@ -208,7 +227,8 @@ function log(text: string): void {
 }
 
 // TODO: this function uses state. should probably be passed in.
-function potentialMoves(
+// TODO: this abstraction doesn't make sense with `getPieceMoves`
+export function potentialMoves(
   chessboard: any,
   piece: string,
   squareFrom: string
