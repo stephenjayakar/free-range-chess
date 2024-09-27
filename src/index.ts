@@ -32,6 +32,7 @@ declare global {
     setPieces: (pieces: Piece[]) => void;
     checkIfCheck: () => void;
     runAI: () => void;
+    aiModel: string;
   }
 }
 
@@ -140,10 +141,17 @@ window.checkIfCheck = (): void => {
   log(`team ${team} check status: ${isCheck}`);
 };
 
+window.aiModel = "random";
+
 window.runAI = (): void => {
+  const aiSelector = document.getElementById("aiSelector") as HTMLSelectElement;
+  window.aiModel = aiSelector.value;
   const team = state.turn;
   log("running the AI for the current team");
-  randomMoves(window.board, team, state);
+  if (window.aiModel === "random") {
+    randomMoves(window.board, team, state);
+  }
+  // Future AI models can be added here with else if statements
 };
 
 type InputEvent = any;
