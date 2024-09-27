@@ -136,6 +136,10 @@ export class Position {
   // This is chess square ("a1") -> 0, 0
   // I've converted the notation to `"X,Y"` where X, Y are 0 -> boarddim - 1
   static squareToCoordinates(square) {
+    if (!square) {
+      console.warn("Invalid square:", square);
+      return [-1, -1]; // Return an invalid coordinate
+    }
     const [file, rank] = square.split(',');
     return [parseInt(file), parseInt(rank)];
   }

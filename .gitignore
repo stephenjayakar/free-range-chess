@@ -5,3 +5,4 @@
 .log
 .vercel
 dist
+.aider*
