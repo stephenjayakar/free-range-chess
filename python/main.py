@@ -262,6 +262,7 @@ def get_player_moves(game_state: GameState):
         from_str, to_str = user_input[:2], user_input[2:]
         from_pos = parse_position(from_str)
         to_pos = parse_position(to_str)
+        print(from_pos, to_pos)
         if from_pos is None or to_pos is None:
             print("Invalid positions. Use format like 'e2e4'.")
             continue
