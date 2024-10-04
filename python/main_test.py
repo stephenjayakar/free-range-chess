@@ -1,5 +1,5 @@
 import unittest
-from python.main import GameState, parse_position, make_move, get_piece_at, PieceType, Team
+from main import GameState, parse_position, make_move, get_piece_at, PieceType, Team
 
 class TestChessGame(unittest.TestCase):
 
