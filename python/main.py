@@ -250,16 +250,16 @@ def get_player_moves(game_state: GameState):
     while True:
         render_board(game_state.board)
         print(f"{game_state.current_turn.name}'s turn.")
-        print("Enter your moves in the format 'e2e4' (from-to).")
+        print("Enter your moves in the format 'e2,e4' (from-to).")
         print("Enter 'done' when finished moving your pieces.")
 
         user_input = input("Your move: ").strip()
         if user_input.lower() == 'done':
             break
-        if len(user_input) != 4:
+        if ',' not in user_input or len(user_input.split(',')) != 2:
             print("Invalid input format. Try again.")
             continue
-        from_str, to_str = user_input[:2], user_input[2:]
+        from_str, to_str = user_input.split(',')
         from_pos = parse_position(from_str)
         to_pos = parse_position(to_str)
         print(from_pos, to_pos)
