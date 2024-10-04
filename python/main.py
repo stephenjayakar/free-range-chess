@@ -240,9 +240,7 @@ def render_board(board: Board):
     print("   " + " ".join(cols) + "\n")
 
 def parse_position(pos_str: str) -> Optional[Position]:
-    if len(pos_str) != 2:
-        return None
-    col_str, row_str = pos_str[0], pos_str[1]
+    col_str, row_str = pos_str[0], pos_str[1:]
     cols = 'abcdefghij'
     rows = list(str(i) for i in range(BOARD_SIZE, 0, -1))
     if col_str in cols and row_str in rows:
@@ -269,7 +267,7 @@ def get_player_moves(game_state: GameState):
         from_pos = parse_position(from_str)
         to_pos = parse_position(to_str)
         if from_pos is None or to_pos is None:
-            print("Invalid positions. Use format like 'e2e4'.")
+            print("Invalid positions. Use format like 'e2,e4'.")
             continue
         if make_move(game_state, from_pos, to_pos):
             print(f"Moved from {from_str} to {to_str}.")
