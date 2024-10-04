@@ -1,13 +1,10 @@
 # Import statements
 import copy
-# import random
-from typing import List, Tuple, Optional# , Dict
+from typing import List, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
-# import torch
-# import torch.nn as nn
-# import torch.optim as optim
-# import numpy as np
+
+BOARD_SIZE = 10  # Change the board size to 10x10
 
 # Enums for teams and piece types
 class Team(Enum):
@@ -36,25 +33,25 @@ Position = Tuple[int, int]  # (row, col)
 Move = Tuple[Position, Position]  # (from_pos, to_pos)
 
 def initialize_board() -> Board:
-    board = [[None for _ in range(8)] for _ in range(8)]
+    board = [[None for _ in range(BOARD_SIZE)] for _ in range(BOARD_SIZE)]
     # Place pieces for both teams
-    # Black pieces
-    for col in range(8):
-        board[1][col] = Piece(Team.BLACK, PieceType.PAWN)
-    board[0][0] = board[0][7] = Piece(Team.BLACK, PieceType.ROOK)
-    board[0][1] = board[0][6] = Piece(Team.BLACK, PieceType.KNIGHT)
-    board[0][2] = board[0][5] = Piece(Team.BLACK, PieceType.BISHOP)
-    board[0][3] = Piece(Team.BLACK, PieceType.QUEEN)
-    board[0][4] = Piece(Team.BLACK, PieceType.KING)
+    # Black pieces (right aligned)
+    for col in range(0, 8):
+        board[1][BOARD_SIZE - col - 1] = Piece(Team.BLACK, PieceType.PAWN)
+    board[0][2] = board[0][9] = Piece(Team.BLACK, PieceType.ROOK)
+    board[0][3] = board[0][8] = Piece(Team.BLACK, PieceType.KNIGHT)
+    board[0][4] = board[0][7] = Piece(Team.BLACK, PieceType.BISHOP)
+    board[0][6] = Piece(Team.BLACK, PieceType.QUEEN)
+    board[0][5] = Piece(Team.BLACK, PieceType.KING)
 
-    # White pieces
-    for col in range(8):
-        board[6][col] = Piece(Team.WHITE, PieceType.PAWN)
-    board[7][0] = board[7][7] = Piece(Team.WHITE, PieceType.ROOK)
-    board[7][1] = board[7][6] = Piece(Team.WHITE, PieceType.KNIGHT)
-    board[7][2] = board[7][5] = Piece(Team.WHITE, PieceType.BISHOP)
-    board[7][3] = Piece(Team.WHITE, PieceType.QUEEN)
-    board[7][4] = Piece(Team.WHITE, PieceType.KING)
+    # White pieces (left aligned)
+    for col in range(0, 8):
+        board[8][col] = Piece(Team.WHITE, PieceType.PAWN)
+    board[9][0] = board[9][7] = Piece(Team.WHITE, PieceType.ROOK)
+    board[9][1] = board[9][6] = Piece(Team.WHITE, PieceType.KNIGHT)
+    board[9][2] = board[9][5] = Piece(Team.WHITE, PieceType.BISHOP)
+    board[9][3] = Piece(Team.WHITE, PieceType.QUEEN)
+    board[9][4] = Piece(Team.WHITE, PieceType.KING)
 
     return board
 
@@ -77,7 +74,7 @@ class GameState:
 
 def is_in_bounds(position: Position) -> bool:
     row, col = position
-    return 0 <= row < 8 and 0 <= col < 8
+    return 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE
 
 def get_piece_at(board: Board, position: Position) -> Optional[Piece]:
     row, col = position
@@ -95,24 +92,14 @@ def add_move_if_valid(moves: List[Position], board: Board, team: Team, position:
 def get_pawn_moves(board: Board, position: Position, team: Team) -> List[Position]:
     moves = []
     row, col = position
-    direction = 1 if team == Team.WHITE else -1
-    # One square forward
-    forward_pos = (row + direction, col)
-    if is_in_bounds(forward_pos) and get_piece_at(board, forward_pos) is None:
-        moves.append(forward_pos)
-        # Two squares forward from starting position
-        start_row = 1 if team == Team.WHITE else 6
-        if row == start_row:
-            two_forward = (row + 2 * direction, col)
-            if get_piece_at(board, two_forward) is None:
-                moves.append(two_forward)
-    # Captures
-    for dcol in [-1, 1]:
-        capture_pos = (row + direction, col + dcol)
-        if is_in_bounds(capture_pos):
-            target_piece = get_piece_at(board, capture_pos)
-            if target_piece and is_opponent_piece(target_piece, team):
-                moves.append(capture_pos)
+    # Pawns can move in any direction
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+    for dr, dc in directions:
+        new_pos = (row + dr, col + dc)
+        if is_in_bounds(new_pos):
+            target_piece = get_piece_at(board, new_pos)
+            if target_piece is None or is_opponent_piece(target_piece, team):
+                moves.append(new_pos)
     return moves
 
 def get_knight_moves(board: Board, position: Position, team: Team) -> List[Position]:
@@ -126,17 +113,14 @@ def get_knight_moves(board: Board, position: Position, team: Team) -> List[Posit
     ]
     for dr, dc in deltas:
         new_pos = (row + dr, col + dc)
-        if is_in_bounds(new_pos):
-            target_piece = get_piece_at(board, new_pos)
-            if target_piece is None or is_opponent_piece(target_piece, team):
-                moves.append(new_pos)
+        add_move_if_valid(moves, board, team, new_pos)
     return moves
 
-def get_straight_line_moves(board: Board, position: Position, team: Team, directions: List[Tuple[int, int]]) -> List[Position]:
+def get_straight_line_moves(board: Board, position: Position, team: Team, directions: List[Tuple[int, int]], max_distance: int) -> List[Position]:
     moves = []
     for dr, dc in directions:
         new_row, new_col = position
-        while True:
+        for _ in range(max_distance):
             new_row += dr
             new_col += dc
             new_pos = (new_row, new_col)
@@ -153,18 +137,18 @@ def get_straight_line_moves(board: Board, position: Position, team: Team, direct
 
 def get_bishop_moves(board: Board, position: Position, team: Team) -> List[Position]:
     directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
-    return get_straight_line_moves(board, position, team, directions)
+    return get_straight_line_moves(board, position, team, directions, max_distance=8)
 
 def get_rook_moves(board: Board, position: Position, team: Team) -> List[Position]:
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    return get_straight_line_moves(board, position, team, directions)
+    return get_straight_line_moves(board, position, team, directions, max_distance=8)
 
 def get_queen_moves(board: Board, position: Position, team: Team) -> List[Position]:
     directions = [
         (-1, -1), (-1, 1), (1, -1), (1, 1),
         (-1, 0), (1, 0), (0, -1), (0, 1)
     ]
-    return get_straight_line_moves(board, position, team, directions)
+    return get_straight_line_moves(board, position, team, directions, max_distance=8)
 
 def get_king_moves(board: Board, position: Position, team: Team) -> List[Position]:
     moves = []
@@ -174,10 +158,7 @@ def get_king_moves(board: Board, position: Position, team: Team) -> List[Positio
             if dr == 0 and dc == 0:
                 continue
             new_pos = (row + dr, col + dc)
-            if is_in_bounds(new_pos):
-                target_piece = get_piece_at(board, new_pos)
-                if target_piece is None or is_opponent_piece(target_piece, team):
-                    moves.append(new_pos)
+            add_move_if_valid(moves, board, team, new_pos)
     return moves
 
 def get_piece_moves(board: Board, position: Position, piece: Piece) -> List[Position]:
@@ -195,10 +176,9 @@ def get_piece_moves(board: Board, position: Position, piece: Piece) -> List[Posi
         return get_king_moves(board, position, piece.team)
     else:
         return []
-import pdb
+
 def is_valid_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bool:
     piece = get_piece_at(game_state.board, from_pos)
-    pdb.set_trace()
     if piece is None or piece.team != game_state.current_turn:
         return False
     if from_pos in game_state.pieces_moved:
@@ -238,25 +218,27 @@ def get_piece_symbol(piece: Piece) -> str:
     return symbols[(piece.team, piece.piece_type)]
 
 def render_board(board: Board):
-    print("  a b c d e f g h")
-    for row in range(8):
-        row_str = f"{8 - row} "
-        for col in range(8):
+    cols = 'abcdefghij'  # Adjust column labels for 10x10 board
+    print("  " + " ".join(cols))
+    for row in range(BOARD_SIZE):
+        row_str = f"{BOARD_SIZE - row} "
+        row_str = "{:<3}".format(row_str)
+        for col in range(BOARD_SIZE):
             piece = board[row][col]
             if piece is None:
                 row_str += '. '
             else:
                 piece_symbol = get_piece_symbol(piece)
                 row_str += piece_symbol + ' '
-        print(row_str + f"{8 - row}")
-    print("  a b c d e f g h\n")
+        print(row_str + f"{BOARD_SIZE - row}")
+    print("   " + " ".join(cols) + "\n")
 
 def parse_position(pos_str: str) -> Optional[Position]:
     if len(pos_str) != 2:
         return None
     col_str, row_str = pos_str[0], pos_str[1]
-    cols = 'abcdefgh'
-    rows = '87654321'
+    cols = 'abcdefghij'
+    rows = ''.join(str(i) for i in range(BOARD_SIZE, 0, -1))
     if col_str in cols and row_str in rows:
         col = cols.index(col_str)
         row = rows.index(row_str)
@@ -299,7 +281,6 @@ def main():
             break
         game_state.switch_turn()
     print("Thank you for playing!")
-
 
 if __name__ == '__main__':
     main()
