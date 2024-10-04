@@ -190,11 +190,11 @@ def is_valid_move(game_state: GameState, from_pos: Position, to_pos: Position) -
         return False, "The move is not valid for this piece."
     return True, ""
 
-def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bool:
+def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> Tuple[bool, str]:
     valid, message = is_valid_move(game_state, from_pos, to_pos)
     if not valid:
         print(f"Invalid move: {message}")
-        return False
+        return False, message
     piece = get_piece_at(game_state.board, from_pos)
     target_piece = get_piece_at(game_state.board, to_pos)
     # Move the piece
@@ -204,7 +204,7 @@ def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bo
     # Check for capturing the opponent's king
     if target_piece and target_piece.piece_type == PieceType.KING:
         game_state.winner = game_state.current_turn
-    return True
+    return True, "Move successful"
 
 def get_piece_symbol(piece: Piece) -> str:
     symbols = {

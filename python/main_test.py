@@ -8,11 +8,13 @@ class TestChessGame(unittest.TestCase):
 
         from_pos = parse_position('a2')
         to_pos = parse_position('b3')
-        self.assertTrue(make_move(game_state, from_pos, to_pos))
+        success, message = make_move(game_state, from_pos, to_pos)
+        self.assertTrue(success, message)
 
         from_pos = parse_position('a1')
         to_pos = parse_position('a9')
-        self.assertTrue(make_move(game_state, from_pos, to_pos))
+        success, message = make_move(game_state, from_pos, to_pos)
+        self.assertTrue(success, message)
 
         # Check if the rook is at a9
         a9 = parse_position('a9')
@@ -30,7 +32,9 @@ class TestChessGame(unittest.TestCase):
 
         from_pos = parse_position('a1')
         to_pos = parse_position('a10')
-        self.assertFalse(make_move(game_state, from_pos, to_pos))
+        success, message = make_move(game_state, from_pos, to_pos)
+        self.assertFalse(success)
+        self.assertEqual(message, "The move is not valid for this piece.")
 
         a1 = parse_position('a1')
         piece = get_piece_at(game_state.board, a1)
