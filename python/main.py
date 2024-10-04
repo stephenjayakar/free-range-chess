@@ -1,13 +1,13 @@
 # Import statements
 import copy
-import random
-from typing import List, Tuple, Optional, Dict
+# import random
+from typing import List, Tuple, Optional# , Dict
 from dataclasses import dataclass
 from enum import Enum
 # import torch
 # import torch.nn as nn
 # import torch.optim as optim
-import numpy as np
+# import numpy as np
 
 # Enums for teams and piece types
 class Team(Enum):
@@ -34,26 +34,27 @@ class Piece:
 Board = List[List[Optional[Piece]]]
 Position = Tuple[int, int]  # (row, col)
 Move = Tuple[Position, Position]  # (from_pos, to_pos)
+
 def initialize_board() -> Board:
     board = [[None for _ in range(8)] for _ in range(8)]
     # Place pieces for both teams
-    # White pieces
-    for col in range(8):
-        board[1][col] = Piece(Team.WHITE, PieceType.PAWN)
-    board[0][0] = board[0][7] = Piece(Team.WHITE, PieceType.ROOK)
-    board[0][1] = board[0][6] = Piece(Team.WHITE, PieceType.KNIGHT)
-    board[0][2] = board[0][5] = Piece(Team.WHITE, PieceType.BISHOP)
-    board[0][3] = Piece(Team.WHITE, PieceType.QUEEN)
-    board[0][4] = Piece(Team.WHITE, PieceType.KING)
-
     # Black pieces
     for col in range(8):
-        board[6][col] = Piece(Team.BLACK, PieceType.PAWN)
-    board[7][0] = board[7][7] = Piece(Team.BLACK, PieceType.ROOK)
-    board[7][1] = board[7][6] = Piece(Team.BLACK, PieceType.KNIGHT)
-    board[7][2] = board[7][5] = Piece(Team.BLACK, PieceType.BISHOP)
-    board[7][3] = Piece(Team.BLACK, PieceType.QUEEN)
-    board[7][4] = Piece(Team.BLACK, PieceType.KING)
+        board[1][col] = Piece(Team.BLACK, PieceType.PAWN)
+    board[0][0] = board[0][7] = Piece(Team.BLACK, PieceType.ROOK)
+    board[0][1] = board[0][6] = Piece(Team.BLACK, PieceType.KNIGHT)
+    board[0][2] = board[0][5] = Piece(Team.BLACK, PieceType.BISHOP)
+    board[0][3] = Piece(Team.BLACK, PieceType.QUEEN)
+    board[0][4] = Piece(Team.BLACK, PieceType.KING)
+
+    # White pieces
+    for col in range(8):
+        board[6][col] = Piece(Team.WHITE, PieceType.PAWN)
+    board[7][0] = board[7][7] = Piece(Team.WHITE, PieceType.ROOK)
+    board[7][1] = board[7][6] = Piece(Team.WHITE, PieceType.KNIGHT)
+    board[7][2] = board[7][5] = Piece(Team.WHITE, PieceType.BISHOP)
+    board[7][3] = Piece(Team.WHITE, PieceType.QUEEN)
+    board[7][4] = Piece(Team.WHITE, PieceType.KING)
 
     return board
 
@@ -194,8 +195,10 @@ def get_piece_moves(board: Board, position: Position, piece: Piece) -> List[Posi
         return get_king_moves(board, position, piece.team)
     else:
         return []
+import pdb
 def is_valid_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bool:
     piece = get_piece_at(game_state.board, from_pos)
+    pdb.set_trace()
     if piece is None or piece.team != game_state.current_turn:
         return False
     if from_pos in game_state.pieces_moved:
@@ -219,18 +222,18 @@ def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bo
 
 def get_piece_symbol(piece: Piece) -> str:
     symbols = {
-        (Team.WHITE, PieceType.PAWN): '♙',
-        (Team.WHITE, PieceType.KNIGHT): '♘',
-        (Team.WHITE, PieceType.BISHOP): '♗',
-        (Team.WHITE, PieceType.ROOK): '♖',
-        (Team.WHITE, PieceType.QUEEN): '♕',
-        (Team.WHITE, PieceType.KING): '♔',
-        (Team.BLACK, PieceType.PAWN): '♟',
-        (Team.BLACK, PieceType.KNIGHT): '♞',
-        (Team.BLACK, PieceType.BISHOP): '♝',
-        (Team.BLACK, PieceType.ROOK): '♜',
-        (Team.BLACK, PieceType.QUEEN): '♛',
-        (Team.BLACK, PieceType.KING): '♚',
+        (Team.BLACK, PieceType.PAWN): '♙',
+        (Team.BLACK, PieceType.KNIGHT): '♘',
+        (Team.BLACK, PieceType.BISHOP): '♗',
+        (Team.BLACK, PieceType.ROOK): '♖',
+        (Team.BLACK, PieceType.QUEEN): '♕',
+        (Team.BLACK, PieceType.KING): '♔',
+        (Team.WHITE, PieceType.PAWN): '♟',
+        (Team.WHITE, PieceType.KNIGHT): '♞',
+        (Team.WHITE, PieceType.BISHOP): '♝',
+        (Team.WHITE, PieceType.ROOK): '♜',
+        (Team.WHITE, PieceType.QUEEN): '♛',
+        (Team.WHITE, PieceType.KING): '♚',
     }
     return symbols[(piece.team, piece.piece_type)]
 
