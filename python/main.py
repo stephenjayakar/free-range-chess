@@ -219,7 +219,7 @@ def get_piece_symbol(piece: Piece) -> str:
 
 def render_board(board: Board):
     cols = 'abcdefghij'  # Adjust column labels for 10x10 board
-    print("  " + " ".join(cols))
+    print("   " + " ".join(cols))
     for row in range(BOARD_SIZE):
         row_str = f"{BOARD_SIZE - row} "
         row_str = "{:<3}".format(row_str)
