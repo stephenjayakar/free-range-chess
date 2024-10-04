@@ -238,7 +238,7 @@ def parse_position(pos_str: str) -> Optional[Position]:
         return None
     col_str, row_str = pos_str[0], pos_str[1]
     cols = 'abcdefghij'
-    rows = ''.join(str(i) for i in range(BOARD_SIZE, 0, -1))
+    rows = list(str(i) for i in range(BOARD_SIZE, 0, -1))
     if col_str in cols and row_str in rows:
         col = cols.index(col_str)
         row = rows.index(row_str)
@@ -262,7 +262,6 @@ def get_player_moves(game_state: GameState):
         from_str, to_str = user_input.split(',')
         from_pos = parse_position(from_str)
         to_pos = parse_position(to_str)
-        print(from_pos, to_pos)
         if from_pos is None or to_pos is None:
             print("Invalid positions. Use format like 'e2e4'.")
             continue
