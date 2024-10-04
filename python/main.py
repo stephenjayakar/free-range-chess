@@ -177,17 +177,23 @@ def get_piece_moves(board: Board, position: Position, piece: Piece) -> List[Posi
     else:
         return []
 
-def is_valid_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bool:
+def is_valid_move(game_state: GameState, from_pos: Position, to_pos: Position) -> Tuple[bool, str]:
     piece = get_piece_at(game_state.board, from_pos)
-    if piece is None or piece.team != game_state.current_turn:
-        return False
+    if piece is None:
+        return False, "No piece at the starting position."
+    if piece.team != game_state.current_turn:
+        return False, "It's not your turn."
     if from_pos in game_state.pieces_moved:
-        return False
+        return False, "This piece has already been moved this turn."
     possible_moves = get_piece_moves(game_state.board, from_pos, piece)
-    return to_pos in possible_moves
+    if to_pos not in possible_moves:
+        return False, "The move is not valid for this piece."
+    return True, ""
 
 def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bool:
-    if not is_valid_move(game_state, from_pos, to_pos):
+    valid, message = is_valid_move(game_state, from_pos, to_pos)
+    if not valid:
+        print(f"Invalid move: {message}")
         return False
     piece = get_piece_at(game_state.board, from_pos)
     target_piece = get_piece_at(game_state.board, to_pos)
