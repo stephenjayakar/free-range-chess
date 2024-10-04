@@ -194,7 +194,7 @@ def make_move(game_state: GameState, from_pos: Position, to_pos: Position) -> bo
     # Move the piece
     game_state.board[to_pos[0]][to_pos[1]] = piece
     game_state.board[from_pos[0]][from_pos[1]] = None
-    game_state.pieces_moved.add(from_pos)
+    game_state.pieces_moved.add(to_pos)
     # Check for capturing the opponent's king
     if target_piece and target_piece.piece_type == PieceType.KING:
         game_state.winner = game_state.current_turn
