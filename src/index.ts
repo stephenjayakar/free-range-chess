@@ -21,7 +21,7 @@ import {
   getOtherTeam,
 } from "./pieces";
 
-import { randomMoves, aggressiveMoves } from "./ai";
+import { randomMoves, aggressiveMoves, strategicMoves } from "./ai";
 
 declare global {
   interface Window {
@@ -33,11 +33,22 @@ declare global {
     checkIfCheck: () => void;
     runAI: () => void;
     aiModel: string;
+    newGame: () => void;
   }
 }
 
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 10;
+
+// Unicode chess piece symbols for captured pieces display
+const PIECE_SYMBOLS: Record<string, string> = {
+  wk: "♔", wq: "♕", wr: "♖", wb: "♗", wn: "♘", wp: "♙",
+  bk: "♚", bq: "♛", br: "♜", bb: "♝", bn: "♞", bp: "♟",
+};
+
+const PIECE_NAMES: Record<string, string> = {
+  k: "King", q: "Queen", r: "Rook", b: "Bishop", n: "Knight", p: "Pawn",
+};
 
 export interface State {
   turn: Team;
@@ -45,17 +56,20 @@ export interface State {
   piecesMoved: string[];
   validationEnabled: boolean;
   winner: Team | null;
+  moveCount: number;
+  capturedWhite: string[]; // white pieces captured by black
+  capturedBlack: string[]; // black pieces captured by white
 }
 
 const state: State = {
   turn: "w",
   pieces: startPosition(BOARD_WIDTH, BOARD_HEIGHT),
-  // TODO: maybe a better name / abstraction.  This stores the
-  // destination spaces of pieces. We know that you can't move a piece
-  // again if it is the destination of a move.
   piecesMoved: [],
   validationEnabled: true,
   winner: null,
+  moveCount: 1,
+  capturedWhite: [],
+  capturedBlack: [],
 };
 
 window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
@@ -69,32 +83,89 @@ window.board = new Chessboard(document.getElementById("board") as HTMLElement, {
 
 window.board.enableMoveInput(inputHandler);
 
+// ============================================================
+// UI Update Functions
+// ============================================================
+
 function updateGameStatus(message: string): void {
-  const statusElement = document.getElementById("statusMessage") as HTMLElement;
-  statusElement.innerText = message;
+  const el = document.getElementById("statusMessage") as HTMLElement;
+  el.innerText = message;
+  el.className = message ? "status-alert" : "";
 }
 
-function updateTurnMessage(message: string): void {
-  const turnElement = document.getElementById("turnMessage") as HTMLElement;
-  turnElement.innerText = message;
+function updateTurnMessage(): void {
+  const el = document.getElementById("turnMessage") as HTMLElement;
+  const isWhite = state.turn === "w";
+  el.innerHTML = `<span class="turn-badge ${isWhite ? 'turn-white' : 'turn-black'}">${isWhite ? '♔' : '♚'}</span> ${isWhite ? "White" : "Black"}'s Turn`;
+}
+
+function updateMoveCount(): void {
+  const el = document.getElementById("moveCount") as HTMLElement;
+  el.innerText = `Move ${state.moveCount}`;
+}
+
+function updateCapturedPieces(): void {
+  const whiteEl = document.getElementById("capturedWhite") as HTMLElement;
+  const blackEl = document.getElementById("capturedBlack") as HTMLElement;
+  
+  whiteEl.innerHTML = state.capturedWhite.length > 0
+    ? state.capturedWhite.map(p => `<span class="captured-piece" title="${PIECE_NAMES[p[1]] || p}">${PIECE_SYMBOLS[p] || p}</span>`).join("")
+    : '<span class="no-captures">—</span>';
+    
+  blackEl.innerHTML = state.capturedBlack.length > 0
+    ? state.capturedBlack.map(p => `<span class="captured-piece" title="${PIECE_NAMES[p[1]] || p}">${PIECE_SYMBOLS[p] || p}</span>`).join("")
+    : '<span class="no-captures">—</span>';
+}
+
+function showGameOver(winner: Team): void {
+  const overlay = document.getElementById("gameOverOverlay") as HTMLElement;
+  const msg = document.getElementById("gameOverMessage") as HTMLElement;
+  const winnerName = winner === "w" ? "White" : "Black";
+  const loserName = winner === "w" ? "Black" : "White";
+  msg.innerHTML = `<span class="winner-icon">${winner === 'w' ? '♔' : '♚'}</span><br>${winnerName} Wins!<br><span class="game-over-sub">${loserName}'s king is in check at end of turn</span>`;
+  overlay.classList.add("visible");
+}
+
+function hideGameOver(): void {
+  const overlay = document.getElementById("gameOverOverlay") as HTMLElement;
+  overlay.classList.remove("visible");
 }
 
 function startTurnChecks(): void {
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
-    updateGameStatus(`${state.turn.toUpperCase()} is in check`);
+    updateGameStatus(`⚠ ${state.turn === "w" ? "White" : "Black"} is in check!`);
   } else {
     updateGameStatus("");
   }
 }
+
+// Track captures when a piece moves to a square with an opponent piece
+function trackCapture(squareTo: string): void {
+  const boardWidth = window.board.props.boardWidth;
+  const targetPiece = window.board.state.position.squares[
+    Position.squareToIndex(squareTo, boardWidth)
+  ];
+  if (targetPiece) {
+    const targetTeam = getTeam(targetPiece);
+    if (targetTeam === "w") {
+      state.capturedWhite.push(targetPiece);
+    } else {
+      state.capturedBlack.push(targetPiece);
+    }
+    updateCapturedPieces();
+  }
+}
+
+// ============================================================
+// Game Actions
+// ============================================================
 
 window.switchTurn = () => {
   if (state.winner) {
     log("The game is over. No more turns allowed.");
     return;
   }
-
-  // Don't allow people to end turn without making any moves.
   if (state.piecesMoved.length === 0) {
     return;
   }
@@ -102,14 +173,16 @@ window.switchTurn = () => {
   const inCheck = checkIfKingIsThreatened(state.turn, window.board);
   if (inCheck) {
     state.winner = getOtherTeam(state.turn);
-    updateGameStatus(`Game Over - ${state.turn.toUpperCase()} lost.`);
+    updateGameStatus("");
+    showGameOver(state.winner);
   } else {
     state.turn = getOtherTeam(state.turn);
     state.piecesMoved = [];
+    state.moveCount++;
     log("switchTurn: " + state.turn);
-    updateTurnMessage(`Turn: ${state.turn === "w" ? "White" : "Black"}`);
+    updateTurnMessage();
+    updateMoveCount();
 
-    // Ungrey the pieces
     window.board.view.clearGreyedPieces();
     window.board.view.redrawPieces();
 
@@ -119,16 +192,16 @@ window.switchTurn = () => {
 
 window.toggleValidation = () => {
   state.validationEnabled = !state.validationEnabled;
-  log(
-    "move validation is now " +
-      (state.validationEnabled ? "enabled" : "disabled")
-  );
+  const btn = document.getElementById("toggleValidationBtn") as HTMLElement;
+  if (btn) {
+    btn.innerText = state.validationEnabled ? "🛡 Validation: ON" : "⚡ Validation: OFF";
+    btn.classList.toggle("btn-active", state.validationEnabled);
+  }
+  log("move validation is now " + (state.validationEnabled ? "enabled" : "disabled"));
 };
 
 window.printPieces = () => {
-  console.log(
-    squaresToPieces(window.board.state.position.squares, BOARD_WIDTH)
-  );
+  console.log(squaresToPieces(window.board.state.position.squares, BOARD_WIDTH));
 };
 
 window.setPieces = (pieces: Piece[]) => {
@@ -141,19 +214,47 @@ window.checkIfCheck = (): void => {
   log(`team ${team} check status: ${isCheck}`);
 };
 
-window.aiModel = "random";
+window.aiModel = "strategic";
 
 window.runAI = (): void => {
   const aiSelector = document.getElementById("aiSelector") as HTMLSelectElement;
   window.aiModel = aiSelector.value;
   const team = state.turn;
-  log("running the AI for the current team");
+  log(`Running ${window.aiModel} AI for ${team === "w" ? "White" : "Black"}`);
+  
   if (window.aiModel === "random") {
     randomMoves(window.board, team, state);
   } else if (window.aiModel === "aggressive") {
     aggressiveMoves(window.board, team, state);
+  } else if (window.aiModel === "strategic") {
+    strategicMoves(window.board, team, state);
   }
-  // Future AI models can be added here with else if statements
+  updateCapturedPieces();
+};
+
+window.newGame = (): void => {
+  state.turn = "w";
+  state.pieces = startPosition(BOARD_WIDTH, BOARD_HEIGHT);
+  state.piecesMoved = [];
+  state.validationEnabled = true;
+  state.winner = null;
+  state.moveCount = 1;
+  state.capturedWhite = [];
+  state.capturedBlack = [];
+  
+  window.board.setPieces(state.pieces);
+  window.board.view.clearGreyedPieces();
+  window.board.view.redrawPieces();
+  
+  updateTurnMessage();
+  updateMoveCount();
+  updateCapturedPieces();
+  updateGameStatus("");
+  hideGameOver();
+  
+  const output = document.getElementById("output") as HTMLElement;
+  output.innerHTML = "";
+  log("New game started!");
 };
 
 type InputEvent = any;
@@ -163,17 +264,11 @@ function inputHandler(event: InputEvent): boolean | void {
     case INPUT_EVENT_TYPE.moveInputStarted: {
       log(`moveInputStarted: ${event.squareFrom}`);
       const piece = event.chessboard.getPiece(event.squareFrom);
-
       const pieceTeam = getTeam(piece);
       if (pieceTeam !== state.turn) {
         return false;
       }
-
-      const moves: any[] = potentialMoves(
-        event.chessboard,
-        piece,
-        event.squareFrom
-      );
+      const moves: any[] = potentialMoves(event.chessboard, piece, event.squareFrom);
       moves.forEach((s) => {
         event.chessboard.addMarker(MARKER_TYPE.dot, s);
       });
@@ -183,37 +278,30 @@ function inputHandler(event: InputEvent): boolean | void {
       if (state.validationEnabled) {
         log(`validateMoveInput: ${event.squareFrom}-${event.squareTo}`);
         const piece = event.chessboard.getPiece(event.squareFrom);
-        const moves: any[] = potentialMoves(
-          event.chessboard,
-          piece,
-          event.squareFrom
-        );
-
-        // Don't allow the king to be taken
+        const moves: any[] = potentialMoves(event.chessboard, piece, event.squareFrom);
         const potentialOtherPiece = event.chessboard.getPiece(event.squareTo);
         if (potentialOtherPiece && potentialOtherPiece[1] == "k") {
           return false;
         }
-
         return moves.includes(event.squareTo);
       } else {
         return true;
       }
     }
     case INPUT_EVENT_TYPE.moveInputCanceled:
-      log(`moveInputCanceled`);
+      log("moveInputCanceled");
       event.chessboard.removeMarkers(MARKER_TYPE.dot);
       event.chessboard.removeMarkers(MARKER_TYPE.bevel);
       break;
     case INPUT_EVENT_TYPE.moveInputFinished:
-      log(`moveInputFinished`);
+      log("moveInputFinished");
       event.chessboard.removeMarkers(MARKER_TYPE.dot);
       event.chessboard.removeMarkers(MARKER_TYPE.bevel);
+      trackCapture(event.squareTo);
       state.piecesMoved.push(event.squareTo);
       event.chessboard.view.setPieceGreyedOut(event.squareTo, true);
       break;
     case INPUT_EVENT_TYPE.movingOverSquare:
-      log(`movingOverSquare: ${event.squareTo}`);
       break;
   }
 }
@@ -222,12 +310,12 @@ const output: HTMLElement = document.getElementById("output") as HTMLElement;
 
 function log(text: string): void {
   const logElement: HTMLDivElement = document.createElement("div");
+  logElement.className = "log-entry";
   logElement.innerText = text;
   output.appendChild(logElement);
+  output.scrollTop = output.scrollHeight;
 }
 
-// TODO: this function uses state. should probably be passed in.
-// TODO: this abstraction doesn't make sense with `getPieceMoves`
 export function potentialMoves(
   chessboard: any,
   piece: string,
@@ -236,17 +324,14 @@ export function potentialMoves(
   if (state.piecesMoved.includes(squareFrom)) {
     return [];
   }
-
   const team = getTeam(piece);
   const coords: Coords = Position.squareToCoordinates(squareFrom);
   const retCoords = getPieceMoves(chessboard, piece, team, coords);
-
   return retCoords.map((c: Coords) => Position.coordinatesToSquare(c));
 }
 
 function getPieceMoves(
   chessboard: any,
-  // TODO: consider refactoring to use `Piece` as then you don't have to pass in coords separately.
   piece: string,
   team: Team,
   coords: Coords
@@ -272,21 +357,12 @@ function coordsEqual(c1: Coords, c2: Coords): boolean {
   return c1[0] === c2[0] && c1[1] === c2[1];
 }
 
-// Essentially checks if the king is in check. It's weird to say
-// "checkCheck" though LOL.
-//
-// High level:
-// 1. Find the king
-// 2. Check all the other pieces on the
-// other team, and see if any of their potential moves include the
-// king in it.
 export function checkIfKingIsThreatened(team: Team, chessboard: any): boolean {
   const pieces = squaresToPieces(
     chessboard.state.position.squares,
     BOARD_WIDTH
   );
   const pieceType = team + "k";
-
   const king = pieces.find((p) => p.type === pieceType);
 
   const otherTeam = getOtherTeam(team);
@@ -301,3 +377,9 @@ export function checkIfKingIsThreatened(team: Team, chessboard: any): boolean {
   });
   return pieceThreatensKing;
 }
+
+// Initialize UI on load
+updateTurnMessage();
+updateMoveCount();
+updateCapturedPieces();
+log("Free Range Chess loaded! White moves first.");
