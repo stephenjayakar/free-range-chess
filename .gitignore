@@ -6,3 +6,6 @@
 .vercel
 dist
 .aider*
+env
+python/logs/
+python/venv/

@@ -1,0 +1,15 @@
+{
+  "status": "stopped",
+  "current_run": "ppo_chess_greedy_20251021_091427",
+  "start_time": "20251021_091427",
+  "pid": null,
+  "config": {
+    "timesteps": 1000000,
+    "n_envs": 8,
+    "opponent": "greedy",
+    "learning_rate": 0.0003,
+    "batch_size": 256,
+    "n_steps": 2048
+  },
+  "log_file": "./logs/ppo_chess_greedy_20251021_091427.log"
+}

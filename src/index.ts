@@ -214,7 +214,89 @@ window.checkIfCheck = (): void => {
   log(`team ${team} check status: ${isCheck}`);
 };
 
-window.aiModel = "strategic";
+window.aiModel = "alphazero";
+
+const AI_SERVER_URL = "http://localhost:8080";
+
+async function runAlphaZeroAI(board: any, team: Team, gameState: State): Promise<void> {
+  const boardWidth = board.props.boardWidth;
+  const boardHeight = board.props.boardHeight;
+  const squares = board.state.position.squares;
+
+  // Build pieces array in the format the server expects
+  const pieces: Array<{square: string, piece: string}> = [];
+  for (let i = 0; i < squares.length; i++) {
+    if (squares[i]) {
+      const x = i % boardWidth;
+      const y = Math.floor(i / boardWidth);
+      pieces.push({
+        square: `${x},${y}`,
+        piece: squares[i],
+      });
+    }
+  }
+
+  const body = {
+    pieces,
+    turn: team,
+    pieces_moved: gameState.piecesMoved.map((sq: string) => {
+      const coords = Position.squareToCoordinates(sq);
+      return `${coords[0]},${coords[1]}`;
+    }),
+    board_width: boardWidth,
+    board_height: boardHeight,
+  };
+
+  const btn = document.getElementById("runAIBtn") as HTMLButtonElement;
+  btn.disabled = true;
+  btn.innerText = "🤔 Thinking...";
+
+  try {
+    const resp = await fetch(`${AI_SERVER_URL}/api/play-turn`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`Server error ${resp.status}: ${err}`);
+    }
+
+    const data = await resp.json();
+    log(`AlphaZero thought for ${data.thinking_time_ms}ms (${data.simulations} sims)`);
+
+    // Apply each move the AI returned
+    for (const move of data.moves) {
+      const fromSquare = Position.coordinatesToSquare(
+        move.square_from.split(",").map(Number)
+      );
+      const toSquare = Position.coordinatesToSquare(
+        move.square_to.split(",").map(Number)
+      );
+
+      trackCapture(toSquare);
+      board.movePiece(fromSquare, toSquare, true);
+      board.view.setPieceGreyedOut(toSquare, true);
+      gameState.piecesMoved.push(toSquare);
+    }
+
+    if (data.moves.length === 0) {
+      log("AlphaZero made no moves (may be stuck)");
+    } else {
+      log(`AlphaZero made ${data.moves.length} move(s)`);
+    }
+  } catch (e: any) {
+    log(`❌ AlphaZero error: ${e.message}`);
+    log("Is the AI server running? Start it with:");
+    log("  cd python && source venv/bin/activate && python ai_server.py");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "🤖 Run AI";
+  }
+
+  updateCapturedPieces();
+}
 
 window.runAI = (): void => {
   const aiSelector = document.getElementById("aiSelector") as HTMLSelectElement;
@@ -222,7 +304,10 @@ window.runAI = (): void => {
   const team = state.turn;
   log(`Running ${window.aiModel} AI for ${team === "w" ? "White" : "Black"}`);
   
-  if (window.aiModel === "random") {
+  if (window.aiModel === "alphazero") {
+    runAlphaZeroAI(window.board, team, state);
+    return; // async — don't call updateCapturedPieces synchronously
+  } else if (window.aiModel === "random") {
     randomMoves(window.board, team, state);
   } else if (window.aiModel === "aggressive") {
     aggressiveMoves(window.board, team, state);
